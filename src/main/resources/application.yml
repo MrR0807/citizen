@@ -1,0 +1,27 @@
+spring:
+  main:
+    banner-mode: off
+
+# Custom application properties
+application:
+  version: v1
+  endpoints:
+    base: /api/${application.version}
+    first: ${application.endpoints.base}/first
+    second: ${application.endpoints.base}/second
+
+
+management:
+  endpoints:
+    enabled-by-default: false # endpoint enablement to be opt-in rather than opt-out
+    web:
+      exposure:
+        include: health, info, prometheus, metrics #exclude everything except health, info, prometheus endpoints
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true

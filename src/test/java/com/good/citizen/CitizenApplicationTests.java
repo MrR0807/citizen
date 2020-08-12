@@ -9,5 +9,4 @@ class CitizenApplicationTests {
     @Test
     void contextLoads() {
     }
-
 }

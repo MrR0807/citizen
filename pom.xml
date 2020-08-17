@@ -66,14 +66,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-data-jpa</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-jdbc</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -97,17 +97,21 @@
         </dependency>
 
         <!-- Database -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.flywaydb</groupId>-->
-<!--            <artifactId>flyway-core</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>com.microsoft.sqlserver</groupId>-->
-<!--            <artifactId>mssql-jdbc</artifactId>-->
-<!--            <version>8.3.0.jre14-preview</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>8.3.0.jre14-preview</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -155,6 +159,11 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>io.soabase.record-builder</groupId>-->
+<!--            <artifactId>record-builder-core</artifactId>-->
+<!--            <version>1.6.ea</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -174,6 +183,16 @@
                     <compilerArgs>--enable-preview</compilerArgs>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     <parameters>true</parameters>
+<!--                    <annotationProcessorPaths>-->
+<!--                        <annotationProcessorPath>-->
+<!--                            <groupId>io.soabase.record-builder</groupId>-->
+<!--                            <artifactId>record-builder-processor</artifactId>-->
+<!--                            <version>1.6.ea</version>-->
+<!--                        </annotationProcessorPath>-->
+<!--                    </annotationProcessorPaths>-->
+<!--                    <annotationProcessors>-->
+<!--                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor</annotationProcessor>-->
+<!--                    </annotationProcessors>-->
                 </configuration>
             </plugin>
 
@@ -183,7 +202,6 @@
                     <argLine>--enable-preview</argLine>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 </project>

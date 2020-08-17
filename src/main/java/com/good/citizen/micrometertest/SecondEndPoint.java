@@ -1,4 +1,4 @@
-package com.good.citizen.api;
+package com.good.citizen.micrometertest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,12 +1,12 @@
-package com.good.citizen.api.request;
+package com.good.citizen.employee.api.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.good.citizen.shared.JobTitle;
+import com.good.citizen.employee.shared.JobTitle;
 
 import java.util.Objects;
 import java.util.Optional;
 
-public class EmployeeRequest {
+public class OldEmployeeRequest {
 
     private final String name;
     private final JobTitle jobTitle;
@@ -14,7 +14,7 @@ public class EmployeeRequest {
     private final String previousTitle;
 
     @JsonCreator
-    public EmployeeRequest(String name, JobTitle jobTitle, Integer age, String previousTitle) {
+    public OldEmployeeRequest(String name, JobTitle jobTitle, Integer age, String previousTitle) {
         this.name = name;
         this.jobTitle = jobTitle;
         this.age = age;
@@ -41,7 +41,7 @@ public class EmployeeRequest {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        EmployeeRequest that = (EmployeeRequest) o;
+        OldEmployeeRequest that = (OldEmployeeRequest) o;
         return Objects.equals(name, that.name) &&
                 jobTitle == that.jobTitle &&
                 Objects.equals(age, that.age) &&

@@ -1,10 +1,10 @@
-package com.good.citizen.api.request;
+package com.good.citizen.employee.api.request;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.good.citizen.shared.JobTitle;
+import com.good.citizen.employee.shared.JobTitle;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
-public record EmployeeRecordRequest(
+public record EmployeeRequest(
         String name,
         JobTitle jobTitle,
         Integer age,

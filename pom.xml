@@ -22,22 +22,6 @@
         <springfox.swagger>2.9.2</springfox.swagger>
     </properties>
 
-    <repositories>
-        <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>central</id>
-            <url>https://artifactory.danskenet.net/artifactory/joined-maven-releases</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>central</id>
-            <url>https://artifactory.danskenet.net/artifactory/joined-maven-releases</url>
-        </pluginRepository>
-    </pluginRepositories>
-
     <dependencyManagement>
         <dependencies>
             <dependency>

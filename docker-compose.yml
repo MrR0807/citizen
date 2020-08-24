@@ -1,0 +1,37 @@
+version: "3.3"
+services:
+  # Domain applications
+  citizen:
+    image: citizen
+    ports:
+      - 8080:8080
+    command: -jar application.jar
+  # Infrastructure
+  prom:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - prom-config:/etc/prometheus
+      - prom-data:/data/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path="/data/prometheus"'
+  nex:
+    image: prom/node-exporter
+    ports:
+      - 995:995
+    volumes:
+      - node-ex-data:/hostfs
+    command:
+      - '--path.rootfs=/hostfs'
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+
+volumes:
+  prom-data:
+  prom-config:
+    external: true
+  node-ex-data:

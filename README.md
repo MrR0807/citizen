@@ -1,6 +1,20 @@
-Goal
+## How to launch
 
-Demonstrate concepts and explain why choices of software engineering.
+Either using docker compose or docker or kubernetes.
+
+```
+mvn clean install
+```
+
+
+
+TODO
+kubernetes
+
+
+## Goal
+
+This is an example of how good application should look like.
 
 ## Endpoints
 

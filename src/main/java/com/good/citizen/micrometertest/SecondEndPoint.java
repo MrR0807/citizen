@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-@RestController("${application.endpoints.second}")
+@RestController
 public class SecondEndPoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecondEndPoint.class);

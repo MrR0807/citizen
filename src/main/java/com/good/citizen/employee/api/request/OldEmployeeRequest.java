@@ -6,6 +6,7 @@ import com.good.citizen.employee.shared.JobTitle;
 import java.util.Objects;
 import java.util.Optional;
 
+//This is only for showcasing why it is important to have immutable data classes. This is essentially what records are underneath
 public class OldEmployeeRequest {
 
     private final String name;

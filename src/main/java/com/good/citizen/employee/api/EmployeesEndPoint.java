@@ -2,6 +2,7 @@ package com.good.citizen.employee.api;
 
 import com.good.citizen.employee.api.request.EmployeeRequest;
 import com.good.citizen.employee.api.request.OldEmployeeRequest;
+import com.good.citizen.employee.service.EmployeeService;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,22 +23,33 @@ public class EmployeesEndPoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmployeesEndPoint.class);
 
+    private final EmployeeService employeeService;
+
+    public EmployeesEndPoint(EmployeeService employeeService) {
+        this.employeeService = employeeService;
+    }
+
     @GetMapping
     @ApiOperation("Get information about all employees")
     public void getAllEmployees() {
         LOGGER.info("Get all employees request");
 
+        employeeService.getAllEmployees();
     }
 
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
     public void getEmployee(@PathVariable("id") @Min(1) Long id) {
         LOGGER.info("Get all employee request. Employee id: {}", id);
+
+        employeeService.getEmployee();
     }
 
     @PostMapping
     @ApiOperation("Add employee")
     public void addEmployee(@RequestBody @Valid EmployeeRequest request) {
         LOGGER.info("Add employee. Employee: {}", request);
+
+        employeeService.addEmployee();
     }
 }

@@ -8,7 +8,7 @@ target/
 .apt_generated
 .classpath
 .factorypath
-.project
+.projectEntity
 .settings
 .springBeans
 .sts4-cache

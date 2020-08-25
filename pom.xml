@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<projectEntity xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -12,12 +12,12 @@
     <artifactId>citizen</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>citizen</name>
-    <description>Demo project for Spring Boot</description>
+    <description>Demo projectEntity for Spring Boot</description>
 
     <properties>
         <java.version>14</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <projectEntity.build.sourceEncoding>UTF-8</projectEntity.build.sourceEncoding>
+        <projectEntity.reporting.outputEncoding>UTF-8</projectEntity.reporting.outputEncoding>
         <spring.wiremock.version>2.2.2.RELEASE</spring.wiremock.version>
         <springfox.swagger>2.9.2</springfox.swagger>
     </properties>
@@ -188,4 +188,4 @@
             </plugin>
         </plugins>
     </build>
-</project>
+</projectEntity>

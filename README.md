@@ -36,6 +36,13 @@ p with { x = 3; }
 
 ## Repository
 
+### Entities
+
+``equals`` and ``hashCode`` is implemtend according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* or in this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
+
+If entity can return null value, wrap *getter* into ``Optional``.
+
+``Entities`` should not leave Service layer. Always return a *view* of ``Entity`` instead. 
 
 ## Tests
 

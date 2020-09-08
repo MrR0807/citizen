@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public class EmployeeRepo {
 
-    private EntityManager em;
+    private final EntityManager em;
 
     public EmployeeRepo(EntityManager em) {
         this.em = em;
@@ -32,7 +32,7 @@ public class EmployeeRepo {
                 .setParameter("id", id)
                 .getResultList();
 
-        return Optional.ofNullable(employees.get(0));
+        return Optional.ofNullable(employees.isEmpty() ? null : employees.get(0));
     }
 
     public void save(EmployeeEntity employee) {

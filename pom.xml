@@ -15,7 +15,7 @@
     <description>Demo project for Spring Boot</description>
 
     <properties>
-        <java.version>14</java.version>
+        <java.version>15</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring.wiremock.version>2.2.2.RELEASE</spring.wiremock.version>
@@ -143,11 +143,11 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>io.soabase.record-builder</groupId>-->
-<!--            <artifactId>record-builder-core</artifactId>-->
-<!--            <version>1.6.ea</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>io.soabase.record-builder</groupId>-->
+        <!--            <artifactId>record-builder-core</artifactId>-->
+        <!--            <version>1.6.ea</version>-->
+        <!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -163,20 +163,20 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>14</release>
+                    <release>15</release>
                     <compilerArgs>--enable-preview</compilerArgs>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     <parameters>true</parameters>
-<!--                    <annotationProcessorPaths>-->
-<!--                        <annotationProcessorPath>-->
-<!--                            <groupId>io.soabase.record-builder</groupId>-->
-<!--                            <artifactId>record-builder-processor</artifactId>-->
-<!--                            <version>1.6.ea</version>-->
-<!--                        </annotationProcessorPath>-->
-<!--                    </annotationProcessorPaths>-->
-<!--                    <annotationProcessors>-->
-<!--                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor</annotationProcessor>-->
-<!--                    </annotationProcessors>-->
+                    <!--                    <annotationProcessorPaths>-->
+                    <!--                        <annotationProcessorPath>-->
+                    <!--                            <groupId>io.soabase.record-builder</groupId>-->
+                    <!--                            <artifactId>record-builder-processor</artifactId>-->
+                    <!--                            <version>1.6.ea</version>-->
+                    <!--                        </annotationProcessorPath>-->
+                    <!--                    </annotationProcessorPaths>-->
+                    <!--                    <annotationProcessors>-->
+                    <!--                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor</annotationProcessor>-->
+                    <!--                    </annotationProcessors>-->
                 </configuration>
             </plugin>
 

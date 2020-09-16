@@ -1,5 +1,6 @@
 package com.good.citizen.employees.api;
 
+import com.good.citizen.employees.api.request.EmployeeFilter;
 import com.good.citizen.employees.api.request.EmployeeRequest;
 import com.good.citizen.employees.model.Employee;
 import com.good.citizen.employees.service.EmployeeService;
@@ -20,7 +21,7 @@ import javax.validation.constraints.Min;
 import java.util.Set;
 
 @RestController
-@RequestMapping(path = "${application.endpoints.employees}",  produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "${application.endpoints.employees}", produces = MediaType.APPLICATION_JSON_VALUE)
 @Validated
 public class EmployeesEndPoint {
 
@@ -34,18 +35,18 @@ public class EmployeesEndPoint {
 
     @GetMapping
     @ApiOperation("Get information about all employees")
-    public Set<Employee> getAllEmployees() {
-        LOGGER.info("Get all employees request");
+    public Set<Employee> getAllEmployees(EmployeeFilter filter) {
+        LOGGER.info("Get all employees request. Employee filter {}", filter);
 
-        return employeeService.getAllEmployees();
+        return this.employeeService.getAllEmployees(filter);
     }
 
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
-    public void getEmployee(@PathVariable("id") @Min(1) Long id) {
+    public Employee getEmployee(@PathVariable("id") @Min(1) Long id) {
         LOGGER.info("Get all employee request. Employee id: {}", id);
 
-        employeeService.getEmployee();
+        return this.employeeService.getEmployee(id);
     }
 
     @PostMapping
@@ -53,6 +54,6 @@ public class EmployeesEndPoint {
     public void addEmployee(@RequestBody @Valid EmployeeRequest request) {
         LOGGER.info("Add employee. Employee: {}", request);
 
-        employeeService.addEmployee();
+        this.employeeService.addEmployee();
     }
 }

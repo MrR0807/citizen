@@ -2,6 +2,7 @@ package com.good.citizen.employees.api;
 
 import com.good.citizen.employees.api.request.EmployeeRequest;
 import com.good.citizen.employees.model.Employee;
+import com.good.citizen.employees.model.Team;
 import com.good.citizen.employees.shared.JobTitle;
 import com.good.citizen.fixture.EmployeeFixture;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -37,6 +39,45 @@ class EmployeesEndPointTest {
     }
 
     @Test
+    void getAllEmployees__givenTeamsFilter() {
+        var url = UriComponentsBuilder.fromUriString(this.url)
+                .queryParam("team", "    team   bLUE    ") //weird type on purpose
+                .build().toString();
+
+        var response = this.restTemplate.getForEntity(url, Employee[].class);
+        var actualEmployees = List.of(response.getBody());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(actualEmployees).extracting(Employee::team).containsOnly(new Team(1L, "Team Blue"));
+    }
+
+    @Test
+    void getAllEmployees__givenTeamFilterWhichDoesNotExists__thenReturnEmptyList() {
+        var url = UriComponentsBuilder.fromUriString(this.url)
+                .queryParam("team", "Does not exist")
+                .build().toString();
+
+        var response = this.restTemplate.getForEntity(url, Employee[].class);
+        var actualEmployees = List.of(response.getBody());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(actualEmployees).isEmpty();
+    }
+
+    @Test
+    void getAllEmployees__givenJobTitleFilter() {
+        var url = UriComponentsBuilder.fromUriString(this.url)
+                .queryParam("jobTitle", JobTitle.SOFTWARE_DEVELOPER)
+                .build().toString();
+
+        var response = this.restTemplate.getForEntity(url, Employee[].class);
+        var actualEmployees = List.of(response.getBody());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(actualEmployees).extracting(Employee::jobTitle).containsOnly(JobTitle.SOFTWARE_DEVELOPER);
+    }
+
+    @Test
     void getEmployee__thenReturnOneEmployee() {
         var response = this.restTemplate.getForEntity(this.url + "/1", Employee.class);
 
@@ -54,7 +95,7 @@ class EmployeesEndPointTest {
 
     @Test
     void addEmployee() {
-        var request = new EmployeeRequest("Hello", "Lastname", "Team Green", JobTitle.PRODUCT_OWNER, 25);
+        var request = new EmployeeRequest("Hello", "Lastname", "Team Green", JobTitle.PRODUCT_OWNER);
         var response = this.restTemplate.postForEntity(this.url, request, Employee.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -62,7 +103,7 @@ class EmployeesEndPointTest {
 
     @Test
     void addEmployee__whenTeamDoesNotExist__thenReturn404() {
-        var request = new EmployeeRequest("Hello", "Lastname", "Team Does Not Exists", JobTitle.PRODUCT_OWNER, 25);
+        var request = new EmployeeRequest("Hello", "Lastname", "Team Does Not Exists", JobTitle.PRODUCT_OWNER);
         var response = this.restTemplate.postForEntity(this.url, request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -71,7 +112,7 @@ class EmployeesEndPointTest {
 
     @Test
     void addEmployee__whenRequestInvalid__thenReturn400() {
-        var request = new EmployeeRequest(null, "Lastname", "Team Does Not Exists", JobTitle.PRODUCT_OWNER, 100);
+        var request = new EmployeeRequest(null, "Lastname", "Team Does Not Exists", JobTitle.PRODUCT_OWNER);
         var response = this.restTemplate.postForEntity(this.url, request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

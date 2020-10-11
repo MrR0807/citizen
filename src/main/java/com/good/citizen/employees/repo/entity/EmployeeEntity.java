@@ -14,7 +14,6 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -54,7 +53,7 @@ public class EmployeeEntity {
     }
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(Long id) {
@@ -62,7 +61,7 @@ public class EmployeeEntity {
     }
 
     public String getFirstName() {
-        return firstName;
+        return this.firstName;
     }
 
     public void setFirstName(String firstName) {
@@ -70,7 +69,7 @@ public class EmployeeEntity {
     }
 
     public String getLastName() {
-        return lastName;
+        return this.lastName;
     }
 
     public void setLastName(String lastName) {
@@ -78,7 +77,7 @@ public class EmployeeEntity {
     }
 
     public JobTitle getJobTitle() {
-        return jobTitle;
+        return this.jobTitle;
     }
 
     public void setJobTitle(JobTitle jobTitle) {
@@ -86,7 +85,7 @@ public class EmployeeEntity {
     }
 
     public TeamEntity getTeam() {
-        return team;
+        return this.team;
     }
 
     public void setTeam(TeamEntity teamEntity) {
@@ -94,7 +93,7 @@ public class EmployeeEntity {
     }
 
     public Set<ProjectEntity> getProjects() {
-        return projects;
+        return this.projects;
     }
 
     public void setProjects(Set<ProjectEntity> projects) {
@@ -103,10 +102,14 @@ public class EmployeeEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         EmployeeEntity employeeEntity = (EmployeeEntity) o;
-        return id != null && Objects.equals(id, employeeEntity.id);
+        return this.id != null && Objects.equals(this.id, employeeEntity.id);
     }
 
     @Override

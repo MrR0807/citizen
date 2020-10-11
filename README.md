@@ -1,12 +1,10 @@
 ## How to launch
 
-Either using docker compose or docker or kubernetes.
+Either using docker compose, docker or kubernetes.
 
 ```
 mvn clean install
 ```
-
-
 
 TODO
 kubernetes
@@ -14,41 +12,59 @@ kubernetes
 
 ## Goal
 
-This is an example of how good application should look like.
+This is an example of how good (in my opinion) application should look like.
+
+##Lombok
+
+Do not use Lombok. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
+should cover almost all cases.
+
+```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small parts of your application. 
+
+#### Additional Arguments
+
+> Spring and Hibernate generate bytecode the way the compiler is intending to support it: by generating a java source code file and then compiling it without touching the source file/class 
+>the annotation came from. Lombok goes into the parse tree (via non-public APIs) and mutates the AST in place.
+- Reddit comment
+
+> <...> while we do code against internal API, they are relatively stable bits. If what lombok does could be done without resorting to internal API, we'd have done something else, 
+>but it can't be done, so we resort to internal API usage.
+- [Lombok developers](https://stackoverflow.com/questions/6107197/how-does-lombok-work):
+
+More resources:
+* https://youtrack.jetbrains.com/issue/IDEA-248146
+* https://github.com/rzwitserloot/lombok/issues/1723
+* https://github.com/jhipster/generator-jhipster/issues/398
+* https://medium.com/@vgonzalo/dont-use-lombok-672418daa819
+* https://medium.com/@gabor.liptak/some-dangers-of-using-lombok-d759fc8f701f
+* https://paluch.biz/blog/180-data-classes-considered-harmful.html
+* http://gregorriegler.com/2019/08/10/who-needs-lombok-anyhow.html
 
 ## Endpoints
 
-1. Endpoints are mainly for documenting, logging and returning responses. They should contain as little business logic as possible. All business logic should be placed in Service Layer.
+1. Endpoints are mainly for documenting, logging requests and returning responses. They should contain as little business logic as possible. All business logic should be placed in Service Layer.
 2. Use ``@ApiOperation`` to describe an endpoint's purpose. There is no need to describe ``response`` or ``responseContainer`` as it is inferred by SpringFox automatically.
 3. Request and Response models should be immutable objects and have:
 * ``private final`` instance variables;
 * ``all-args`` constructor with ``@JsonCreator``;
 * ``hashCode``, ``equals``, ``toString``;
 This is for easier migration to [records](https://openjdk.java.net/jeps/359)
-4. Use Builder pattern for constructing immutable objects. Future Java version will have [companion builder](https://mail.openjdk.java.net/pipermail/amber-spec-experts/2020-July/002236.html).
-For now, use something like https://github.com/Randgalt/record-builder or write a builder by hand. My advice is against Lombok.
-
-https://youtrack.jetbrains.com/issue/IDEA-248146
-
-A more recent update on [record builders](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md).
-Possible syntax:
+4. Use Builder pattern for constructing immutable objects.
+5. **Whenever you have Collections of objects, don't forget to annotate ``@NotNull`` for the container type.** For example:
 ```
-p with { x = 3; }
-```
-
-5. Whenever you have Collections of objects, don't forget to annotate ``@NotNull`` for the container type. For example:
-```
-DON'T
+BAD
 @NotNull
 List<Integer> numbers;
 
-DO
+GOOD
 @NotNull
 List<@NotNull Integer> numbers;
 ```
 The difference is that in first example, request can be sent with ``"numbers": [null]`` and will be a valid request. 
 
-6. Don't forget ``@Validated`` on ``@RestController``. For example if we have:
+6. **Don't forget ``@Validated`` on ``@RestController``**. 
+
+Example:
 ```
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
@@ -59,7 +75,7 @@ The difference is that in first example, request can be sent with ``"numbers": [
     }
 ```
 
-and if ```@Validated``` is missing, then ```@Min``` will not be taken into account, thus you could pass -1 as an ``id``.
+If ```@Validated``` is missing, then ```@Min``` will not be taken into account, thus you could pass -1 as an ``id``.
 
 7. If you want to have filters for endpoints, like so:
 ```
@@ -72,13 +88,14 @@ and if ```@Validated``` is missing, then ```@Min``` will not be taken into accou
     }
 ```
 
-Make sure to use ```@JsonCreator``` and getters, because Spring does not support Records for request params yet. 
+Make sure to use ```@JsonCreator``` and getters, because Spring does not support Records for request params yet.
 
 
 ## Repository
 
-1. Use ``getResultList()`` vs ``getSingleResult()``, because ``getSingleResult()`` throws ``NoResultException`` - if there is no result, thus you would have to
-wrap it into ``try/catch``.
+#### Use ``getResultList()`` vs ``getSingleResult()``
+
+``getSingleResult()`` throws ``NoResultException`` - if there is no result, thus you would have to wrap it into ``try/catch``.
 
 ```
 public Optional<EmployeeEntity> getEmployee(Long id) {
@@ -94,8 +111,9 @@ public Optional<EmployeeEntity> getEmployee(Long id) {
     }
 ```
 
-2. Prefer JPQL versus Criter builder.
+#### Prefer JPQL versus Criteria builder.
 
+JPQL:
 ```
     public Optional<EmployeeEntity> getEmployee(Long id) {
         var employees = this.em.createQuery("""
@@ -112,6 +130,7 @@ public Optional<EmployeeEntity> getEmployee(Long id) {
 
 VS 
 
+CriteriaBuilder:
 ```
     public Optional<EmployeeEntity> getEmployee(Long id) {
         var cb = this.em.getCriteriaBuilder();
@@ -128,12 +147,29 @@ VS
     }
 ```
 
+VS
+
+Spring Data:
+```
+    @Override
+    @Query("""
+            SELECT e FROM EmployeeEntity e
+                            JOIN FETCH e.projects p
+                            JOIN FETCH e.team t
+                            WHERE e.id = :id""")
+    Optional<EmployeeEntity> findById(Long id);
+```
+
 Example of dynamic queries can be found in ``EmployeeRepo`` and ``EmployeeRepoCriteria``.
+A more elaborate comparison is in ``getAllEmployees`` where filter is given as an input parameter.
+In this particular case Spring Data's ``Specification`` API is not useful when data is being fetched with ``JOINS``. 
+However, I have created ``EmployeeRepoSpringData``, using ``Example`` API. Unfortunately it does not work if you want to fetch associations in your 
+query instead of allowing N+1 problem via ``FetchType.EAGER``.
 
 
 ### Entities
 
-``equals`` and ``hashCode`` is implemtend according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* or in this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
+``equals`` and ``hashCode`` is implemented according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* or in this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
 
 If entity can return null value, wrap *getter* into ``Optional``.
 
@@ -141,9 +177,11 @@ If entity can return null value, wrap *getter* into ``Optional``.
 
 ## Optional and nullability
 
-Avoid nulls at all cost! Developer has to trust it's own code so you wouldn't require to sprinkle ```Objects.requireNonNull``` or worse ```if (object != null)``` everywhere.
-Defend at the perimeter! All data which is incoming into the system from outside (REST request, RabbitMQ messages, Database entities etc.) have to follow these rules regarding nullability:
+Avoid nulls at all cost! Developer has to trust code otherwise you will find this pattern sprinkled ```Objects.requireNonNull``` or worse ```if (object != null)``` everywhere.
+Defend at the perimeter! All data which is incoming into the system from outside (REST request, RabbitMQ messages, Database entities etc.) has to follow these rules regarding nullability:
 * If property can be null, you should use Optional as a return **parameter**.
+
+Defending at the perimeter: https://youtu.be/wY_CUkU1zfw?t=2800
 ```
 public class ExampleRequest {
     
@@ -175,26 +213,75 @@ Here, for example, team can be null. However, if we can define a default value f
 
 ### Naming
 
-Follow test method naming conventions ``methodUnderTest__[given/when]__then`` where ``given/when`` is optional. 
+Follow test method naming conventions ``methodUnderTest__[given/when]__[then]`` where ``given/when`` and ``then`` is optional. 
 Example: 
 * ``getAllEmployees__thenReturnListOfEmployees``
 * ``getAllEmployees__whenNoEmployeesExist__thenReturnEmptyList``
 * ``getEmployee__whenInvalidEmployeeId__thenReturn400``
 * ``getEmployee__whenEmployeeDoesNotExists__thenReturn404``
 
+### Integration Tests
+
+Reuse Spring's Application Context as much as possible. This will speed up your tests, because then it doesn't restart, thus in perfect example, you only need to start Spring's Application once.
+Avoid @MockBeans.
+
+Either created a single annotation or class which each integration test extends.
+
+## Spring
+
+1. Dependencies should be inject by constructor. From Spring documentation:
+> The Spring team generally advocates constructor injection, as it lets you implement application components as immutable objects and ensures 
+>that required dependencies are not null. Furthermore, constructor-injected components are always returned to the client (calling) code in a fully initialized state.
+
+2. If you have multiple properties, prefer to use [Type-safe Configuration Properties](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-typesafe-configuration-properties).
+
+```
+@ConstructorBinding
+@ConfigurationProperties("acme")
+public class AcmeProperties {
+
+    private final boolean enabled;
+    private final int remoteAddress;
+    private final String name
+
+    public AcmeProperties(boolean enabled, int remoteAddress, String security) {
+        this.enabled = enabled;
+        this.remoteAddress = remoteAddress;
+        this.security = security;
+    }
+
+    //Getters
+}
+``` 
+
 
 ## Maven
 
+1. Try to have as little external dependencies as possible. Every dependency might block you in the future from migrating to newer Java version.
+2. Don't over-engineer plugins.
+3. At least in my experience it's best to have maven-compiler-plugin declared with Java versions, otherwise IntelliJ sets wrong Java for the project:
+```
+<!--plugin for intellij to get settings-->
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.8.1</version>
+    <configuration>
+        <release>15</release>
+        <compilerArgs>--enable-preview</compilerArgs>
+        <forceJavacCompilerUse>true</forceJavacCompilerUse>
+        <parameters>true</parameters>
+    </configuration>
+</plugin>
+```  
 
 ## HTTP Client
-
 
 ## No Async/await frameworks
 
 ReactorX and friends.
 
 ## Application.yaml
-
 
 ## Kubernetes pod template
 

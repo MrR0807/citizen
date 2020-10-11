@@ -167,16 +167,6 @@
                     <compilerArgs>--enable-preview</compilerArgs>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     <parameters>true</parameters>
-                    <!--                    <annotationProcessorPaths>-->
-                    <!--                        <annotationProcessorPath>-->
-                    <!--                            <groupId>io.soabase.record-builder</groupId>-->
-                    <!--                            <artifactId>record-builder-processor</artifactId>-->
-                    <!--                            <version>1.6.ea</version>-->
-                    <!--                        </annotationProcessorPath>-->
-                    <!--                    </annotationProcessorPaths>-->
-                    <!--                    <annotationProcessors>-->
-                    <!--                        <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor</annotationProcessor>-->
-                    <!--                    </annotationProcessors>-->
                 </configuration>
             </plugin>
 

@@ -8,6 +8,7 @@ import java.util.Set;
 import static com.good.citizen.employees.shared.JobTitle.BUSINESS_ANALYST;
 import static com.good.citizen.employees.shared.JobTitle.PRODUCT_OWNER;
 import static com.good.citizen.employees.shared.JobTitle.SOFTWARE_DEVELOPER;
+import static com.good.citizen.fixture.ProjectFixture.firstProject;
 import static com.good.citizen.fixture.TeamFixture.firstTeam;
 import static com.good.citizen.fixture.TeamFixture.secondTeam;
 
@@ -25,6 +26,6 @@ public class EmployeeFixture {
     }
 
     public static Employee expectedEmployee() {
-        return new Employee(1L, "First", "Lastname", SOFTWARE_DEVELOPER, firstTeam(), Set.of());
+        return new Employee(1L, "First", "Lastname", SOFTWARE_DEVELOPER, firstTeam(), Set.of(firstProject()));
     }
 }

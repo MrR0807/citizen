@@ -15,7 +15,7 @@ spring:
     platform: h2
   jpa:
     database: h2
-    show-sql: false
+    show-sql: true
     generate-ddl: false
     hibernate:
       ddl-auto: none #Do not autogenerate SQL tables. Sometimes it might lead to suboptimal structures/types. Control you database!

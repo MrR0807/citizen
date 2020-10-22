@@ -54,6 +54,6 @@ public class EmployeesEndPoint {
     public void addEmployee(@RequestBody @Valid EmployeeRequest request) {
         LOGGER.info("Add employee. Employee: {}", request);
 
-        this.employeeService.addEmployee();
+        this.employeeService.addEmployee(request);
     }
 }

@@ -14,12 +14,24 @@ kubernetes
 
 This is an example of how good (in my opinion) application should look like.
 
-##Lombok
+## Lombok
 
-Do not use Lombok. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
+**Do not use Lombok**. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
 should cover almost all cases.
 
-```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small parts of your application. 
+```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small parts of your application. Plus, I've seen the same mistake done many times - 
+```@Entity``` class marked with ```@Data``` or  ```@EqualsAndHashCode``` leads to bad JPA practices:
+* Missing bidirectional synchronized methods.
+> Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times.
+The addPhone() and removePhone() are utility methods that synchronize both ends whenever a child element is added or removed.
+
+[Source - Hibernate User Guide](https://docs.jboss.org/hibernate/stable/orm/userguide/html_single/Hibernate_User_Guide.html#associations-one-to-many-bidirectional)
+
+>However, we still need to have both sides in sync as otherwise, we break the Domain Model relationship consistency, and the entity state transitions are not guaranteed to work unless both sides are properly synchronized.
+
+[Source - Vlad Mihalcea Blog](https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/)
+
+* Bad equals and hashcode implementations. [Vlad Michalcea Blog](https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/)
 
 #### Additional Arguments
 
@@ -42,15 +54,25 @@ More resources:
 
 ## Endpoints
 
-1. Endpoints are mainly for documenting, logging requests and returning responses. They should contain as little business logic as possible. All business logic should be placed in Service Layer.
-2. Use ``@ApiOperation`` to describe an endpoint's purpose. There is no need to describe ``response`` or ``responseContainer`` as it is inferred by SpringFox automatically.
-3. Request and Response models should be immutable objects and have:
+Endpoints are mainly for documenting, logging requests and returning responses. They should contain as little business logic as possible. All business logic should be placed in Service Layer.
+
+----
+
+Use ``@ApiOperation`` to describe an endpoint's purpose. There is no need to describe ``response`` or ``responseContainer`` as it is inferred by SpringFox automatically.
+
+----
+
+Request and Response models should be immutable objects and have (This is for easier migration to [records](https://openjdk.java.net/jeps/359)):
 * ``private final`` instance variables;
 * ``all-args`` constructor with ``@JsonCreator``;
 * ``hashCode``, ``equals``, ``toString``;
-This is for easier migration to [records](https://openjdk.java.net/jeps/359)
-4. Use Builder pattern for constructing immutable objects.
-5. **Whenever you have Collections of objects, don't forget to annotate ``@NotNull`` for the container type.** For example:
+
+Use Builder pattern for constructing immutable objects.
+
+----
+
+**Whenever you have Collections of objects, don't forget to annotate ``@NotNull`` for the container type.** For example:
+
 ```
 BAD
 @NotNull
@@ -60,9 +82,12 @@ GOOD
 @NotNull
 List<@NotNull Integer> numbers;
 ```
-The difference is that in first example, request can be sent with ``"numbers": [null]`` and will be a valid request. 
 
-6. **Don't forget ``@Validated`` on ``@RestController``**. 
+The difference is that in first example, request can be sent with ``"numbers": [null]`` and will be a valid request.
+
+---- 
+
+**Don't forget ``@Validated`` on ``@RestController``**. 
 
 Example:
 ```
@@ -77,7 +102,9 @@ Example:
 
 If ```@Validated``` is missing, then ```@Min``` will not be taken into account, thus you could pass -1 as an ``id``.
 
-7. If you want to have filters for endpoints, like so:
+----
+
+If you want to have filters for endpoints, like so:
 ```
     @GetMapping
     @ApiOperation("Get information about all employees")
@@ -160,12 +187,14 @@ Spring Data:
     Optional<EmployeeEntity> findById(Long id);
 ```
 
+We need to define JPQL query, because Spring cannot join tables optimally, unless you define ``fetch = FetchType.EAGER``. With ManyToMany relationship,
+this can lead to N+1. 
+
 Example of dynamic queries can be found in ``EmployeeRepo`` and ``EmployeeRepoCriteria``.
 A more elaborate comparison is in ``getAllEmployees`` where filter is given as an input parameter.
 In this particular case Spring Data's ``Specification`` API is not useful when data is being fetched with ``JOINS``. 
 However, I have created ``EmployeeRepoSpringData``, using ``Example`` API. Unfortunately it does not work if you want to fetch associations in your 
 query instead of allowing N+1 problem via ``FetchType.EAGER``.
-
 
 ### Entities
 
@@ -173,7 +202,17 @@ query instead of allowing N+1 problem via ``FetchType.EAGER``.
 
 If entity can return null value, wrap *getter* into ``Optional``.
 
-``Entities`` should not leave Service layer. Always return a *view* of ``Entity`` instead. 
+``Entities`` should not leave Service layer. Always return a *view* of ``Entity`` instead.
+
+Bidirectional synchronized methods.
+> Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times.
+The addPhone() and removePhone() are utility methods that synchronize both ends whenever a child element is added or removed:
+
+[Source - Hibernate User Guide](https://docs.jboss.org/hibernate/stable/orm/userguide/html_single/Hibernate_User_Guide.html#associations-one-to-many-bidirectional)
+
+>However, we still need to have both sides in sync as otherwise, we break the Domain Model relationship consistency, and the entity state transitions are not guaranteed to work unless both sides are properly synchronized.
+
+[Source - Vlad Mihalcea Blog](https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/)
 
 ## Optional and nullability
 
@@ -227,13 +266,19 @@ Avoid @MockBeans.
 
 Either created a single annotation or class which each integration test extends.
 
+### Resources
+
+https://www.aerokhin.com/2020/09/28/what-is-the-right-unit-in-unit-test-after-all/
+
 ## Spring
 
-1. Dependencies should be inject by constructor. From Spring documentation:
+Dependencies should be inject by constructor. From Spring documentation:
 > The Spring team generally advocates constructor injection, as it lets you implement application components as immutable objects and ensures 
 >that required dependencies are not null. Furthermore, constructor-injected components are always returned to the client (calling) code in a fully initialized state.
 
-2. If you have multiple properties, prefer to use [Type-safe Configuration Properties](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-typesafe-configuration-properties).
+----
+
+If you have multiple properties, prefer to use [Type-safe Configuration Properties](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-typesafe-configuration-properties).
 
 ```
 @ConstructorBinding
@@ -254,6 +299,9 @@ public class AcmeProperties {
 }
 ``` 
 
+----
+
+No need to declare ```@Autowired``` on constructors if only one constructor exists.
 
 ## Maven
 
@@ -286,3 +334,8 @@ ReactorX and friends.
 ## Kubernetes pod template
 
 ## Database migration
+
+## Git
+
+What happens when tag is equal to branch name? It will checkout to tag, instead of branch. That means, that new code has been commited to branch and CI tool
+would like to checkout to the head of named branch (using branch name), it will checkout to tag and you won't have your changes deployed.

@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -24,13 +25,13 @@ public class ProjectEntity {
     private BigDecimal budget;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "projects")
-    private Set<EmployeeEntity> employees;
+    private Set<EmployeeEntity> employees = new HashSet<>();
 
     public ProjectEntity() {
     }
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(Long id) {
@@ -38,7 +39,7 @@ public class ProjectEntity {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -46,7 +47,7 @@ public class ProjectEntity {
     }
 
     public Optional<BigDecimal> getBudget() {
-        return Optional.ofNullable(budget);
+        return Optional.ofNullable(this.budget);
     }
 
     public void setBudget(BigDecimal budget) {
@@ -54,7 +55,7 @@ public class ProjectEntity {
     }
 
     public Set<EmployeeEntity> getEmployees() {
-        return employees;
+        return this.employees;
     }
 
     public void setEmployees(Set<EmployeeEntity> employees) {
@@ -63,10 +64,14 @@ public class ProjectEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         ProjectEntity projectEntity = (ProjectEntity) o;
-        return id != null && Objects.equals(id, projectEntity.id);
+        return this.id != null && Objects.equals(this.id, projectEntity.id);
     }
 
     @Override

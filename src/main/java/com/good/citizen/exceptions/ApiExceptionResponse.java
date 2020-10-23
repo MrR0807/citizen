@@ -15,32 +15,31 @@ import java.util.List;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public record ApiExceptionResponse(
         int statusCode,
-        @JsonFormat(pattern = JsonFormatPattern.TIMESTAMP_FORMAT)
-        LocalDateTime timestamp,
+        @JsonFormat(pattern = JsonFormatPattern.TIMESTAMP_FORMAT) LocalDateTime timestamp,
         String reason,
         List<ApiExceptionDetails> exceptions) {
 
-        public static ApiExceptionResponse ofBadRequest(String reason, List<ApiExceptionDetails> exceptions) {
-                return new ApiExceptionResponse(HttpStatus.BAD_REQUEST.value(), TimeMachine.nowLocalDateAndTime(), reason, exceptions);
-        }
+    public static ApiExceptionResponse ofBadRequest(String reason, List<ApiExceptionDetails> exceptions) {
+        return new ApiExceptionResponse(HttpStatus.BAD_REQUEST.value(), TimeMachine.nowLocalDateAndTime(), reason, exceptions);
+    }
 
-        public static ApiExceptionResponse ofBadRequest(String reason) {
-                return ofBadRequest(reason, List.of());
-        }
+    public static ApiExceptionResponse ofBadRequest(String reason) {
+        return ofBadRequest(reason, List.of());
+    }
 
-        public static ApiExceptionResponse ofInternalServerError(String reason) {
-                return new ApiExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), TimeMachine.nowLocalDateAndTime(), reason, List.of());
-        }
+    public static ApiExceptionResponse ofInternalServerError(String reason) {
+        return new ApiExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), TimeMachine.nowLocalDateAndTime(), reason, List.of());
+    }
 
-        public static ApiExceptionResponse ofRequestTimeout(String reason) {
-                return new ApiExceptionResponse(HttpStatus.REQUEST_TIMEOUT.value(), TimeMachine.nowLocalDateAndTime(), reason, List.of());
-        }
+    public static ApiExceptionResponse ofRequestTimeout(String reason) {
+        return new ApiExceptionResponse(HttpStatus.REQUEST_TIMEOUT.value(), TimeMachine.nowLocalDateAndTime(), reason, List.of());
+    }
 
-        public static ApiExceptionResponse ofNotFound(String reason) {
-                return new ApiExceptionResponse(HttpStatus.NOT_FOUND.value(), TimeMachine.nowLocalDateAndTime(), reason, List.of());
-        }
+    public static ApiExceptionResponse ofNotFound(String reason) {
+        return new ApiExceptionResponse(HttpStatus.NOT_FOUND.value(), TimeMachine.nowLocalDateAndTime(), reason, List.of());
+    }
 
-        public ResponseEntity<ApiExceptionResponse> asResponseEntity() {
-                return new ResponseEntity<>(this, HttpStatus.valueOf(this.statusCode()));
-        }
+    public ResponseEntity<ApiExceptionResponse> asResponseEntity() {
+        return new ResponseEntity<>(this, HttpStatus.valueOf(this.statusCode()));
+    }
 }

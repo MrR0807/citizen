@@ -19,21 +19,10 @@ This is an example of how good (in my opinion) application should look like.
 **Do not use Lombok**. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
 should cover almost all cases.
 
-```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small parts of your application. Plus, I've seen the same mistake done many times - 
-```@Entity``` class marked with ```@Data``` or  ```@EqualsAndHashCode``` leads to bad JPA practices:
-* Missing bidirectional synchronized methods.
-> Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times.
-The addPhone() and removePhone() are utility methods that synchronize both ends whenever a child element is added or removed.
+```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small parts of your application, which does not bring enough value to 
+be add to dependency tree. If you're truly bothered by getters/setters you can just make properties ``public``. 
 
-[Source - Hibernate User Guide](https://docs.jboss.org/hibernate/stable/orm/userguide/html_single/Hibernate_User_Guide.html#associations-one-to-many-bidirectional)
-
->However, we still need to have both sides in sync as otherwise, we break the Domain Model relationship consistency, and the entity state transitions are not guaranteed to work unless both sides are properly synchronized.
-
-[Source - Vlad Mihalcea Blog](https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/)
-
-* Bad equals and hashcode implementations. [Vlad Michalcea Blog](https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/)
-
-#### Additional Arguments
+#### Main Arguments
 
 > Spring and Hibernate generate bytecode the way the compiler is intending to support it: by generating a java source code file and then compiling it without touching the source file/class 
 >the annotation came from. Lombok goes into the parse tree (via non-public APIs) and mutates the AST in place.
@@ -52,9 +41,25 @@ More resources:
 * https://paluch.biz/blog/180-data-classes-considered-harmful.html
 * http://gregorriegler.com/2019/08/10/who-needs-lombok-anyhow.html
 
+#### Lombok and Entity
+
+I've seen the same mistake done many times - ```@Entity``` class marked with ```@Data``` or  ```@EqualsAndHashCode``` leads to bad JPA practices:
+* Missing bidirectional synchronized methods.
+> Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times.
+The addPhone() and removePhone() are utility methods that synchronize both ends whenever a child element is added or removed.
+
+[Source - Hibernate User Guide](https://docs.jboss.org/hibernate/stable/orm/userguide/html_single/Hibernate_User_Guide.html#associations-one-to-many-bidirectional)
+
+>However, we still need to have both sides in sync as otherwise, we break the Domain Model relationship consistency, and the entity state transitions are not guaranteed to work unless both sides are properly synchronized.
+
+[Source - Vlad Mihalcea Blog](https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/)
+
+* Bad equals and hashcode implementations. [Vlad Michalcea Blog](https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/)
+
 ## Endpoints
 
-Endpoints are mainly for documenting, logging requests and returning responses. They should contain as little business logic as possible. All business logic should be placed in Service Layer.
+Endpoints are mainly for documenting, logging requests and returning responses. They should contain as little business logic as possible. 
+All business logic should be placed in Service Layer.
 
 ----
 
@@ -117,6 +122,11 @@ If you want to have filters for endpoints, like so:
 
 Make sure to use ```@JsonCreator``` and getters, because Spring does not support Records for request params yet.
 
+## Error Handling
+
+Errors within your application should be protocol-independent. For example, if an Employee does not exist, application throws ``NotFoundException``.
+Then depending on the protocol, may it be AMQP or HTTP, error should translate accordingly. For HTTP there are Spring's ``@RestControllerAdvice``.
+I've provided a list of exception handlers which are utilized in my other applications. Find them under ``exceptionhandlers`` package.
 
 ## Repository
 

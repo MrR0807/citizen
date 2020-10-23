@@ -23,16 +23,4 @@ public class ProjectRepo {
 
         return RepoUtils.fromResultListToOptional(result);
     }
-
-    public Optional<ProjectEntity> getProject(String name) {
-        var result = this.em.createQuery("SELECT p FROM ProjectEntity p where p.name = :name", ProjectEntity.class)
-                .setParameter("name", name)
-                .getResultList();
-
-        return RepoUtils.fromResultListToOptional(result);
-    }
-
-    public void save(ProjectEntity teamEntity) {
-        this.em.persist(teamEntity);
-    }
 }

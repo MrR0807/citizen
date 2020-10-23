@@ -23,9 +23,10 @@ public class ProjectsService {
     public void addEmployeeToProject(EmployeeProjectRequest request) {
         var employeeEntity = this.repo.getEmployee(request.employeeId())
                 .orElseThrow(() -> new NotFoundException("Employee with id: %d does not exist".formatted(request.employeeId())));
+
         var projectEntity = this.projectRepo.getProject(request.projectId())
                 .orElseThrow(() -> new NotFoundException("Project with id: %d does not exists".formatted(request.projectId())));
 
-        employeeEntity.joinProject(projectEntity);
+        employeeEntity.getProjects().add(projectEntity);
     }
 }

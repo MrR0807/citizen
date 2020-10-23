@@ -2,6 +2,7 @@ package com.good.citizen.employees.repo.entity;
 
 import com.good.citizen.employees.shared.JobTitle;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -14,6 +15,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -33,11 +35,11 @@ public class EmployeeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private TeamEntity team;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(schema = "employees", name = "employee_project",
             joinColumns = @JoinColumn(name = "employee_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "project_id", referencedColumnName = "id"))
-    private Set<ProjectEntity> projects;
+    private Set<ProjectEntity> projects = new HashSet<>();
 
     public EmployeeEntity() {
     }

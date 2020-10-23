@@ -19,8 +19,8 @@ This is an example of how good (in my opinion) application should look like.
 **Do not use Lombok**. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
 should cover almost all cases.
 
-```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small parts of your application, which does not bring enough value to 
-be add to dependency tree. If you're truly bothered by getters/setters you can just make properties ``public``. 
+```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small part of your application, and does not justify adding Lombok. 
+If you're truly bothered by getters/setters you can just make properties ``public``. 
 
 #### Main Arguments
 
@@ -58,8 +58,18 @@ The addPhone() and removePhone() are utility methods that synchronize both ends 
 
 ## Endpoints
 
-Endpoints are mainly for documenting, logging requests and returning responses. They should contain as little business logic as possible. 
-All business logic should be placed in Service Layer.
+Endpoints are mainly for documenting endpoint, logging requests then delegating it's handling to Service Layer and returning responses. 
+They should contain as little business logic as possible.
+
+```
+    @GetMapping("{id}")
+    @ApiOperation("Get information about one employees")
+    public Employee getEmployee(@PathVariable("id") @Min(1) Long id) {
+        LOGGER.info("Get employee request. Employee id: {}", id);
+
+        return this.employeeService.getEmployee(id);
+    }
+```
 
 ----
 
@@ -198,7 +208,7 @@ Spring Data:
 ```
 
 We need to define JPQL query, because Spring cannot join tables optimally, unless you define ``fetch = FetchType.EAGER``. With ManyToMany relationship,
-this can lead to N+1. 
+this [can lead to N+1 problem](https://vladmihalcea.com/n-plus-1-query-problem/). 
 
 Example of dynamic queries can be found in ``EmployeeRepo`` and ``EmployeeRepoCriteria``.
 A more elaborate comparison is in ``getAllEmployees`` where filter is given as an input parameter.
@@ -210,9 +220,15 @@ query instead of allowing N+1 problem via ``FetchType.EAGER``.
 
 ``equals`` and ``hashCode`` is implemented according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* or in this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
 
+---
+
 If entity can return null value, wrap *getter* into ``Optional``.
 
+---
+
 ``Entities`` should not leave Service layer. Always return a *view* of ``Entity`` instead.
+
+---
 
 Bidirectional synchronized methods.
 > Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times.
@@ -226,11 +242,13 @@ The addPhone() and removePhone() are utility methods that synchronize both ends 
 
 ## Optional and nullability
 
-Avoid nulls at all cost! Developer has to trust code otherwise you will find this pattern sprinkled ```Objects.requireNonNull``` or worse ```if (object != null)``` everywhere.
-Defend at the perimeter! All data which is incoming into the system from outside (REST request, RabbitMQ messages, Database entities etc.) has to follow these rules regarding nullability:
-* If property can be null, you should use Optional as a return **parameter**.
+Avoid nulls at all cost! Developer has to trust code otherwise you will find this pattern sprinkled ```Objects.requireNonNull``` or 
+worse ```if (object != null)``` everywhere.
+Defend at the perimeter! All data which is incoming into the system from outside (REST request, RabbitMQ messages, Database entities etc.) has to follow 
+these rules regarding nullability:
+* If property can be null, you should use **Optional as a return parameter**.
 
-Defending at the perimeter: https://youtu.be/wY_CUkU1zfw?t=2800
+Defending at the perimeter (timestamped link, watch time ~5 min): [Clean Code: The Next Chapter by Victor Rentea](https://youtu.be/wY_CUkU1zfw?t=2800)
 ```
 public class ExampleRequest {
     
@@ -271,18 +289,21 @@ Example:
 
 ### Integration Tests
 
-Reuse Spring's Application Context as much as possible. This will speed up your tests, because then it doesn't restart, thus in perfect example, you only need to start Spring's Application once.
-Avoid @MockBeans.
+Reuse Spring's Application Context as much as possible. This will speed up your tests, because it doesn't need to restart, 
+thus in perfect conditions, you'd only need to start Spring's Application once. To acheive this:
+* Create a single annotation (see @IntegrationTest in test folder); 
+* Class which each integration test extends.
 
-Either created a single annotation or class which each integration test extends.
+**Avoid @MockBeans.**
 
 ### Resources
 
 https://www.aerokhin.com/2020/09/28/what-is-the-right-unit-in-unit-test-after-all/
+https://phauer.com/2019/modern-best-practices-testing-java/
 
 ## Spring
 
-Dependencies should be inject by constructor. From Spring documentation:
+Favor construction injections vs setter/property injections. From Spring documentation:
 > The Spring team generally advocates constructor injection, as it lets you implement application components as immutable objects and ensures 
 >that required dependencies are not null. Furthermore, constructor-injected components are always returned to the client (calling) code in a fully initialized state.
 
@@ -331,15 +352,101 @@ No need to declare ```@Autowired``` on constructors if only one constructor exis
         <parameters>true</parameters>
     </configuration>
 </plugin>
-```  
+```
+
+---
+
+Use UTF-8 when running surefire-plugin.
+
+```
+<!-- Some tests assert on UTF-8 letters, thus without defined encoding, tests will fail.
+However they fail only when running with `mvn test`, but they succeed when launched through IntelliJ UI-->
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>2.22.2</version>
+    <configuration>
+        <argLine>@{argLine} -Dfile.encoding=UTF-8</argLine>
+    </configuration>
+</plugin>
+```
 
 ## HTTP Client
 
 ## No Async/await frameworks
 
-ReactorX and friends.
+ReactorX and friends. Project Loom/Virtual threads will cover 99% needs.
 
 ## Application.yaml
+
+```
+spring:
+  main:
+    banner-mode: off ##Turn off banner
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    ignore-missing-migrations: true #After some time you'll want to archive migrations scripts
+    locations: classpath:/db/migration/h2
+    installed-by: laurynas
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:citizen;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    platform: h2
+  jpa:
+    database: h2
+    show-sql: true #Use ``true`` only when you need to debug. Otherwise performance will degraded due to stouding all SQL opperations 
+    generate-ddl: false #Never let Hibernate/JPA generate your database schemas. Otherwise, you might find surprises if you've annotated incorrectly. See unidirectional @OneToMany. 
+    hibernate:
+      ddl-auto: none #Do not autogenerate SQL tables. Sometimes it might lead to suboptimal structures/types. Control you database!
+    properties:
+      hibernate:
+        #Turn it on only when you need for analysing queries. Do not leave it on!
+        generate_statistics: false
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+    open-in-view: false #Do not allow Spring to automagically fetch data from database. See https://vladmihalcea.com/the-open-session-in-view-anti-pattern/
+  h2:
+    console:
+      enabled: true
+      path: /h2
+  application:
+    name: good-citizen
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+# Custom application properties.
+application:
+  version: v1
+  base: /api/${application.version}
+  endpoints:
+    employees: ${application.base}/employees
+    projects: ${application.base}/projects
+    teams: ${application.base}/teams
+
+
+management:
+  endpoints:
+    enabled-by-default: false # endpoint enablement to be opt-in rather than opt-out
+    web:
+      exposure:
+        include: health, info, prometheus, metrics #exclude everything except health, info, prometheus endpoints
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+
+
+
+```
 
 ## Kubernetes pod template
 

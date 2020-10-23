@@ -44,7 +44,7 @@ public class EmployeesEndPoint {
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
     public Employee getEmployee(@PathVariable("id") @Min(1) Long id) {
-        LOGGER.info("Get all employee request. Employee id: {}", id);
+        LOGGER.info("Get employee request. Employee id: {}", id);
 
         return this.employeeService.getEmployee(id);
     }

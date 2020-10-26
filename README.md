@@ -379,6 +379,21 @@ ReactorX and friends. Project Loom/Virtual threads will cover 99% needs.
 
 ## Application.yaml
 
+Flyway configuration:
+```
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    ignore-missing-migrations: true #After some time you'll want to archive migrations scripts
+    locations: classpath:/db/migration/h2
+    installed-by: laurynas
+```
+
+
+
+
+
+Full ``application.yml``:
 ```
 spring:
   main:
@@ -397,7 +412,7 @@ spring:
     platform: h2
   jpa:
     database: h2
-    show-sql: true #Use ``true`` only when you need to debug. Otherwise performance will degraded due to stouding all SQL opperations 
+    show-sql: true #Use ``true`` only when you need to debug. Otherwise performance will degraded due to stoud'ing all SQL opperations 
     generate-ddl: false #Never let Hibernate/JPA generate your database schemas. Otherwise, you might find surprises if you've annotated incorrectly. See unidirectional @OneToMany. 
     hibernate:
       ddl-auto: none #Do not autogenerate SQL tables. Sometimes it might lead to suboptimal structures/types. Control you database!
@@ -443,9 +458,6 @@ management:
       enabled: true
     metrics:
       enabled: true
-
-
-
 ```
 
 ## Kubernetes pod template
@@ -455,4 +467,4 @@ management:
 ## Git
 
 What happens when tag is equal to branch name? It will checkout to tag, instead of branch. That means, that new code has been commited to branch and CI tool
-would like to checkout to the head of named branch (using branch name), it will checkout to tag and you won't have your changes deployed.
+would like to checkout to the head of named branch (using branch name), it will checkout to tag, and you won't have your changes deployed.

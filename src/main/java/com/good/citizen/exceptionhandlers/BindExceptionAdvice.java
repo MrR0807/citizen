@@ -13,8 +13,7 @@ import java.util.stream.Collectors;
 
 /**
  * Bind exception happens when Spring cannot bind parameters with model.
- * Example.
- * Say EmployeeFilter would have jakarta constraint - @NotNull private final String team.
+ * Say, for example, EmployeeFilter would have jakarta constraint on ``team`` property - ``@NotNull private final String team``.
  * If request would not contain team variable, BindException would be thrown.
  *
  * @see com.good.citizen.employees.api.request.EmployeeFilter

@@ -1,6 +1,7 @@
 package com.good.citizen.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.good.citizen.shared.JsonFormatPattern;
@@ -18,6 +19,10 @@ public record ApiExceptionResponse(
         @JsonFormat(pattern = JsonFormatPattern.TIMESTAMP_FORMAT) LocalDateTime timestamp,
         String reason,
         List<ApiExceptionDetails> exceptions) {
+
+    @JsonCreator //Partial hack. In future Jackson should support records out of the box
+    public ApiExceptionResponse {
+    }
 
     public static ApiExceptionResponse ofBadRequest(String reason, List<ApiExceptionDetails> exceptions) {
         return new ApiExceptionResponse(HttpStatus.BAD_REQUEST.value(), TimeMachine.nowLocalDateAndTime(), reason, exceptions);

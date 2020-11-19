@@ -10,8 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,4 +58,25 @@ public class EmployeesEndPoint {
 
         this.employeeService.addEmployee(request);
     }
+
+    @PutMapping
+    @ApiOperation("Add employee or update")
+    public void putEmployee(@RequestBody @Valid EmployeeRequest request) {
+        LOGGER.info("Add or update employee. Employee: {}", request);
+
+        this.employeeService.putEmployee(request);
+    }
+
+    @PostMapping("{id}")
+    @ApiOperation("Update employee")
+    public void updateEmployee() {
+
+    }
+
+    @PatchMapping("{id}")
+    @ApiOperation("Update employee")
+    public void patchEmployee() {
+        
+    }
+
 }

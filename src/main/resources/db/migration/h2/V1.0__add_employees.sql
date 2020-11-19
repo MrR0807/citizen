@@ -1,3 +1,5 @@
+CREATE SCHEMA employees;
+
 -------------------------------- Add Tables --------------------------------
 
 CREATE TABLE employees.team
@@ -19,14 +21,16 @@ CREATE TABLE employees.project
 
 CREATE TABLE employees.employee
 (
-    id         BIGINT       NOT NULL identity (1,1),
-    first_name VARCHAR(255) NOT NULL,
-    last_name  VARCHAR(255) NOT NULL,
-    job_title  VARCHAR(255) NOT NULL,
-    team_id    BIGINT       NOT NULL,
+    id                     BIGINT       NOT NULL identity (1,1),
+    social_security_number BIGINT       NOT NULL,
+    first_name             VARCHAR(255) NOT NULL,
+    last_name              VARCHAR(255) NOT NULL,
+    job_title              VARCHAR(255) NOT NULL,
+    team_id                BIGINT       NOT NULL,
 
     CONSTRAINT PK__employee__id PRIMARY KEY (id),
-    CONSTRAINT FK__employee__team FOREIGN KEY (team_id) REFERENCES team (id)
+    CONSTRAINT FK__employee__team FOREIGN KEY (team_id) REFERENCES team (id),
+    CONSTRAINT UQ__social_security_number UNIQUE (social_security_number)
 );
 
 CREATE TABLE employees.employee_project
@@ -51,11 +55,11 @@ VALUES (1, 'Project One', 1000.0),
        (2, 'Project Z', 1000000.0),
        (3, 'Project X', null);
 
-INSERT INTO employees.employee (id, first_name, last_name, job_title, team_id)
-VALUES (1, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1),
-       (2, 'Second', 'Lastname', 'SOFTWARE_DEVELOPER', 2),
-       (3, 'Third', 'Lastname', 'BUSINESS_ANALYST', 1),
-       (4, 'Fourth', 'Lastname', 'PRODUCT_OWNER', 1);
+INSERT INTO employees.employee (id, social_security_number, first_name, last_name, job_title, team_id)
+VALUES (1, 123456789, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1),
+       (2, 987654321, 'Second', 'Lastname', 'SOFTWARE_DEVELOPER', 2),
+       (3, 111444777, 'Third', 'Lastname', 'BUSINESS_ANALYST', 1),
+       (4, 222555888, 'Fourth', 'Lastname', 'PRODUCT_OWNER', 1);
 
 INSERT INTO employees.employee_project(employee_id, project_id)
 VALUES (1, 1),

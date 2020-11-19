@@ -48,10 +48,16 @@ public class EmployeeService {
 
     private static EmployeeEntity mapToEntity(EmployeeRequest request, TeamEntity teamEntity) {
         var employeeEntity = new EmployeeEntity();
+        employeeEntity.setSocialSecurityNumber(request.socialSecurityNumber());
         employeeEntity.setFirstName(request.name());
         employeeEntity.setLastName(request.lastName());
         employeeEntity.setJobTitle(request.jobTitle());
         employeeEntity.setTeam(teamEntity);
         return employeeEntity;
+    }
+
+    @Transactional
+    public void putEmployee(EmployeeRequest request) {
+
     }
 }

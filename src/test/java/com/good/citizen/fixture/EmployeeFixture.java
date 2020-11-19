@@ -19,13 +19,13 @@ public class EmployeeFixture {
 
     public static List<Employee> expectedEmployees() {
         return List.of(
-                new Employee(1L, "First", "Lastname", SOFTWARE_DEVELOPER, firstTeam(), Set.of()),
-                new Employee(2L, "Second", "Lastname", SOFTWARE_DEVELOPER, secondTeam(), Set.of()),
-                new Employee(3L, "Third", "Lastname", BUSINESS_ANALYST, firstTeam(), Set.of()),
-                new Employee(4L, "Fourth", "Lastname", PRODUCT_OWNER, firstTeam(), Set.of()));
+                new Employee(1L, 123456789L, "First", "Lastname", SOFTWARE_DEVELOPER, firstTeam(), Set.of()),
+                new Employee(2L, 987654321L, "Second", "Lastname", SOFTWARE_DEVELOPER, secondTeam(), Set.of()),
+                new Employee(3L, 111444777L, "Third", "Lastname", BUSINESS_ANALYST, firstTeam(), Set.of()),
+                new Employee(4L, 222555888L, "Fourth", "Lastname", PRODUCT_OWNER, firstTeam(), Set.of()));
     }
 
     public static Employee expectedEmployee() {
-        return new Employee(1L, "First", "Lastname", SOFTWARE_DEVELOPER, firstTeam(), Set.of(firstProject()));
+        return new Employee(1L, 123456789L, "First", "Lastname", SOFTWARE_DEVELOPER, firstTeam(), Set.of(firstProject()));
     }
 }

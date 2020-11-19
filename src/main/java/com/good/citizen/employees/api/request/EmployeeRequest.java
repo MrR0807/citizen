@@ -9,6 +9,7 @@ import javax.validation.constraints.Size;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public record EmployeeRequest(
+        @NotNull Long socialSecurityNumber,
         @NotBlank @Size(max = 255) String name,
         @NotBlank @Size(max = 255) String lastName,
         @NotBlank @Size(max = 255) String team,

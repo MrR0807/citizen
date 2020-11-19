@@ -58,7 +58,7 @@ The addPhone() and removePhone() are utility methods that synchronize both ends 
 
 ## Endpoints
 
-Endpoints are mainly for documenting endpoint, logging requests then delegating it's handling to Service Layer and returning responses. 
+Endpoints are mainly for documenting endpoint, logging requests then delegating its handling to Service Layer and returning responses. 
 They should contain as little business logic as possible.
 
 ```
@@ -77,7 +77,7 @@ Use ``@ApiOperation`` to describe an endpoint's purpose. There is no need to des
 
 ----
 
-Request and Response models should be immutable objects and have (This is for easier migration to [records](https://openjdk.java.net/jeps/359)):
+Request and Response models should be immutable objects and have (this is for easier migration to [records](https://openjdk.java.net/jeps/359)):
 * ``private final`` instance variables;
 * ``all-args`` constructor with ``@JsonCreator``;
 * ``hashCode``, ``equals``, ``toString``;
@@ -86,7 +86,7 @@ Use Builder pattern for constructing immutable objects.
 
 ----
 
-**Whenever you have Collections of objects, don't forget to annotate ``@NotNull`` for the container type.** For example:
+**Whenever you have Collections of objects, don't forget to annotate ``@NotNull`` for the container type:**
 
 ```
 BAD
@@ -132,6 +132,145 @@ If you want to have filters for endpoints, like so:
 
 Make sure to use ```@JsonCreator``` and getters, because Spring does not support Records for request params yet.
 
+---
+
+### HTTP Methods
+
+GET, HEAD, OPTIONS, and TRACE methods are defined to be safe.
+
+[Source](https://tools.ietf.org/html/rfc7231#section-4.2)
+
+#### Idempotent Methods
+
+PUT, DELETE, and safe request methods are idempotent.
+
+Idempotent - operation can be repeated and the outcome will be the same (the server's state will remain the same). For example, PUT employee will either create or update existing. Doesn't matter,
+how many times you will repeat the same opperation it will always return same response.
+
+The problem with DELETE, which if successful would normally return a 200 (OK) or 204 (No Content), will often return a 404 (Not Found) on subsequent calls. However, the state on the server 
+is the same after each DELETE call, but the response is different.
+
+#### GET
+
+GET /resources (possibility of filter which returns empty list)
+GET /resources/{resource-id}
+GET /resources/{resource-name}
+
+If GET List does not contain resources (with/without filters) return an empty list or throw exception. **I prefer returning an empty list**.
+
+Example of GET list:
+```
+    @GetMapping
+    @ApiOperation("Get information about all employees")
+    public Set<Employee> getAllEmployees(EmployeeFilter filter) {
+        LOGGER.info("Get all employees request. Employee filter {}", filter);
+
+        return this.employeeService.getAllEmployees(filter);
+    }
+
+//This will be record in the future
+public class EmployeeFilter {
+
+    private final String team;
+    private final JobTitle jobTitle;
+
+    @JsonCreator
+    public EmployeeFilter(String team, JobTitle jobTitle) {
+        this.team = StringUtils.normalizeSpace(team);
+        this.jobTitle = jobTitle;
+    }
+
+    public Optional<String> getTeam() {
+        return Optional.ofNullable(this.team);
+    }
+
+    public Optional<JobTitle> getJobTitle() {
+        return Optional.ofNullable(this.jobTitle);
+    }
+
+    @Override
+    public String toString() {
+        return "EmployeeFilter{" +
+                "team='" + this.team + '\'' +
+                ", jobTitle=" + this.jobTitle +
+                '}';
+    }
+}
+```
+
+Example of GET resource:
+```
+    @GetMapping("{id}")
+    @ApiOperation("Get information about one employees")
+    public Employee getEmployee(@PathVariable("id") @Min(1) Long id) {
+        LOGGER.info("Get employee request. Employee id: {}", id);
+
+        return this.employeeService.getEmployee(id);
+    }
+```
+
+#### POST
+
+POST /employees
+
+If employee exists, throw exception. When employee is created:
+- Return OK;
+- Return OK and created resource id;
+- Return OK and entire created resource.
+
+Questions:
+* How will respond look:
+  * Return only OK;
+  * Return OK and created resource's id;
+  * Return OK and entire created resource (in some case this might be too costly).
+* What unique properties define resource?
+
+Example:
+```
+    @PostMapping
+    @ApiOperation("Add employee")
+    public void addEmployee(@RequestBody @Valid EmployeeRequest request) {
+        LOGGER.info("Add employee. Employee: {}", request);
+
+        this.employeeService.addEmployee(request);
+    }
+
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY) //This won't be required in the future
+public record EmployeeRequest(
+        @NotBlank @Size(max = 255) String name,
+        @NotBlank @Size(max = 255) String lastName,
+        @NotBlank @Size(max = 255) String team,
+        @NotNull JobTitle jobTitle) {
+}
+```
+
+#### PUT
+
+> The PUT method requests that the state of the target resource be created or replaced with the state defined by the representation enclosed in the request message payload.
+
+``PUT`` is idempotent.
+
+
+Questions:
+* What unique properties define resource?
+* Will you respond differently when resource was created/updated?
+
+
+#### PATCH
+
+
+POST /resources (create) (if already exists throw 400)
+GET /resources/{resource-id} (if doesn't exist throw 404)
+POST /resources/{resource-id} (update, if doesn't exist throw 404)
+PATCH /resources/{resource-id} (partial update, if doesn't exist throw 404)
+
+PUT (?) Indeponent opperation. Create or update? If exists create or update? Always return 200?
+
+### PATCH
+
+https://tools.ietf.org/html/rfc7386
+
+
 ## Error Handling
 
 Errors within your application should be protocol-independent. For example, if an Employee does not exist, application throws ``NotFoundException``.
@@ -142,7 +281,8 @@ I've provided a list of exception handlers which are utilized in my other applic
 
 #### Use ``getResultList()`` vs ``getSingleResult()``
 
-``getSingleResult()`` throws ``NoResultException`` - if there is no result, thus you would have to wrap it into ``try/catch``.
+``getSingleResult()`` throws ``NoResultException`` which is ``RuntimeException`` - if there is no result, thus you would have to wrap it into ``try/catch``.
+I advise utilizing ``getResultList()`` like so:
 
 ```
 public Optional<EmployeeEntity> getEmployee(Long id) {
@@ -157,6 +297,8 @@ public Optional<EmployeeEntity> getEmployee(Long id) {
         return Optional.ofNullable(employees.isEmpty() ? null : employees.get(0));
     }
 ```
+
+---
 
 #### Prefer JPQL versus Criteria builder.
 
@@ -212,7 +354,7 @@ this [can lead to N+1 problem](https://vladmihalcea.com/n-plus-1-query-problem/)
 
 Example of dynamic queries can be found in ``EmployeeRepo`` and ``EmployeeRepoCriteria``.
 A more elaborate comparison is in ``getAllEmployees`` where filter is given as an input parameter.
-In this particular case Spring Data's ``Specification`` API is not useful when data is being fetched with ``JOINS``. 
+In this particular case Spring Data's ``Specification`` API is not useful when data is fetched with ``JOINS``. 
 However, I have created ``EmployeeRepoSpringData``, using ``Example`` API. Unfortunately it does not work if you want to fetch associations in your 
 query instead of allowing N+1 problem via ``FetchType.EAGER``.
 
@@ -243,12 +385,12 @@ The addPhone() and removePhone() are utility methods that synchronize both ends 
 ## Optional and nullability
 
 Avoid nulls at all cost! Developer has to trust code otherwise you will find this pattern sprinkled ```Objects.requireNonNull``` or 
-worse ```if (object != null)``` everywhere.
-Defend at the perimeter! All data which is incoming into the system from outside (REST request, RabbitMQ messages, Database entities etc.) has to follow 
+worse ```if (object != null) {}``` everywhere.
+Defend at the perimeter! (Timestamped link, watch time ~5 min): [Clean Code: The Next Chapter by Victor Rentea](https://youtu.be/wY_CUkU1zfw?t=2800)  
+All data which is incoming into the system from outside (REST request, RabbitMQ messages, Database entities etc.) has to follow 
 these rules regarding nullability:
 * If property can be null, you should use **Optional as a return parameter**.
 
-Defending at the perimeter (timestamped link, watch time ~5 min): [Clean Code: The Next Chapter by Victor Rentea](https://youtu.be/wY_CUkU1zfw?t=2800)
 ```
 public class ExampleRequest {
     
@@ -264,7 +406,6 @@ public class ExampleRequest {
 }
 ```
 * If property can have default value, define it in the constructor. Another reason to use immutable types. They guarantee correct values.
-Example:
 ```
     @JsonCreator
     public EmployeeRequest(String name, String lastName, String team, JobTitle jobTitle) {
@@ -277,6 +418,8 @@ Example:
 Here, for example, team can be null. However, if we can define a default value for that property, we should do it using ```requireNonNullElse``` or ```requireNonNullElseGet```.
 
 ## Tests
+
+
 
 ### Naming
 
@@ -294,11 +437,33 @@ thus in perfect conditions, you'd only need to start Spring's Application once. 
 * Create a single annotation (see @IntegrationTest in test folder); 
 * Class which each integration test extends.
 
+---
+
+Testing time.
+
+TimeMachine class.
+
 **Avoid @MockBeans.**
+
+### Testing communication with other services
+
+#### Wiremock
+
+#### Contract Based Testing
+
+#### End-to-End Testing
+
+### Misc
+```
+assertThat(responseFrame).hasNoNullFieldsOrProperties();
+```
+If property wrapped into ``Optional``, it is not null, hence the assertion will pass.
+
 
 ### Resources
 
-https://www.aerokhin.com/2020/09/28/what-is-the-right-unit-in-unit-test-after-all/
+https://aerokhin.com/2020/09/28/what-is-the-right-unit-in-unit-test-after-all/
+
 https://phauer.com/2019/modern-best-practices-testing-java/
 
 ## Spring
@@ -371,11 +536,35 @@ However they fail only when running with `mvn test`, but they succeed when launc
 </plugin>
 ```
 
+---
+
+Don't forget to check whether surefire or jacoco supports Java version.
+
 ## HTTP Client
 
 ## No Async/await frameworks
 
 ReactorX and friends. Project Loom/Virtual threads will cover 99% needs.
+
+```
+Thread.startVirtualThread(() -> {
+    System.out.println("Hello, Loom!");
+});
+```
+
+Key Takeaways:
+* A virtual thread is a Thread — in code, at runtime, in the debugger and in the profiler.
+* A virtual thread is not a wrapper around an OS thread, but a Java entity.
+* Creating a virtual thread is cheap — have millions, and don’t pool them!
+* Blocking a virtual thread is cheap — be synchronous!
+* No language changes needed.
+* Pluggable schedulers offer the flexibility of asynchronous programming.
+
+Resources:
+* [State of Loom](https://cr.openjdk.java.net/~rpressler/loom/loom/sol1_part1.html)
+* [Taking Project Loom for a spin](https://renato.athaydes.com/posts/taking-loom-for-a-spin.html)
+* [Project Loom - Modern Scalable Concurrency for the Java Platform](https://inside.java/2020/09/17/project-loom/)
+* [On the Performance of User-Mode Threads and Coroutines](https://inside.java/2020/08/07/loom-performance/) 
 
 ## Application.yaml
 
@@ -388,10 +577,6 @@ Flyway configuration:
     locations: classpath:/db/migration/h2
     installed-by: laurynas
 ```
-
-
-
-
 
 Full ``application.yml``:
 ```
@@ -468,3 +653,7 @@ management:
 
 What happens when tag is equal to branch name? It will checkout to tag, instead of branch. That means, that new code has been commited to branch and CI tool
 would like to checkout to the head of named branch (using branch name), it will checkout to tag, and you won't have your changes deployed.
+
+## Kotlin
+
+https://github.com/jacoco/jacoco/issues/1086

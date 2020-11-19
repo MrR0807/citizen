@@ -26,6 +26,7 @@ public class EmployeeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Long socialSecurityNumber;
     private String firstName;
     private String lastName;
 
@@ -60,6 +61,14 @@ public class EmployeeEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getSocialSecurityNumber() {
+        return this.socialSecurityNumber;
+    }
+
+    public void setSocialSecurityNumber(Long socialSecurityNumber) {
+        this.socialSecurityNumber = socialSecurityNumber;
     }
 
     public String getFirstName() {

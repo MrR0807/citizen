@@ -13,14 +13,14 @@ public class ProjectFixture {
     }
 
     public static Project firstProject() {
-        return new Project(1L, "Project One", BigDecimal.valueOf(1_000.00).setScale(2, RoundingMode.HALF_UP));
+        return new Project(1L, "One", BigDecimal.valueOf(1_000.00).setScale(2, RoundingMode.HALF_UP));
     }
 
     public static Project projectZ() {
-        return new Project(2L, "Project Z", BigDecimal.valueOf(1000_000));
+        return new Project(2L, "Z", BigDecimal.valueOf(1000_000));
     }
 
     public static Project projectX() {
-        return new Project(3L, "Project X", (BigDecimal) null);
+        return new Project(3L, "X", (BigDecimal) null);
     }
 }

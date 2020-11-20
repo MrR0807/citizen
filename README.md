@@ -58,9 +58,34 @@ The addPhone() and removePhone() are utility methods that synchronize both ends 
 
 ## Endpoints
 
-Endpoints are mainly for documenting endpoint, logging requests then delegating its handling to Service Layer and returning responses. 
+Controller classes are mainly for documenting endpoint, logging requests then delegating to Service Layer and returning responses. 
 They should contain as little business logic as possible.
 
+```
+    @GetMapping("{id}")
+    @ApiOperation("Get information about one employees")
+    public Employee getEmployee(@PathVariable("id") @Min(1) Long id) {
+        LOGGER.info("Get employee request. Employee id: {}", id);
+
+        return this.employeeService.getEmployee(id);
+    }
+```
+
+---
+
+Don't use ``ResponseEntity`` boilerplate:
+```
+    @GetMapping("{id}")
+    @ApiOperation("Get information about one employees")
+    public ResponseEntity<Employee> getEmployee(@PathVariable("id") @Min(1) Long id) {
+        LOGGER.info("Get employee request. Employee id: {}", id);
+
+        var employee = this.employeeService.getEmployee(id);
+        return ResponseEntity.ok(employee);
+    }
+```
+
+Just return the object:
 ```
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
@@ -83,6 +108,8 @@ Request and Response models should be immutable objects and have (this is for ea
 * ``hashCode``, ``equals``, ``toString``;
 
 Use Builder pattern for constructing immutable objects.
+
+After Java 16+ use ``records``.
 
 ----
 
@@ -136,7 +163,7 @@ Make sure to use ```@JsonCreator``` and getters, because Spring does not support
 
 ### HTTP Methods
 
-GET, HEAD, OPTIONS, and TRACE methods are defined to be safe.
+GET, HEAD, OPTIONS, and TRACE methods are defined to be safe. Request methods are considered "safe" if their defined semantics are essentially **read-only**.
 
 [Source](https://tools.ietf.org/html/rfc7231#section-4.2)
 
@@ -145,20 +172,22 @@ GET, HEAD, OPTIONS, and TRACE methods are defined to be safe.
 PUT, DELETE, and safe request methods are idempotent.
 
 Idempotent - operation can be repeated and the outcome will be the same (the server's state will remain the same). For example, PUT employee will either create or update existing. Doesn't matter,
-how many times you will repeat the same opperation it will always return same response.
+how many times you will repeat the same operation it will always return same response.
 
 The problem with DELETE, which if successful would normally return a 200 (OK) or 204 (No Content), will often return a 404 (Not Found) on subsequent calls. However, the state on the server 
 is the same after each DELETE call, but the response is different.
 
+---
+
 #### GET
 
-GET /resources (possibility of filter which returns empty list)
-GET /resources/{resource-id}
-GET /resources/{resource-name}
+``GET /resources`` (possibility of filter which returns empty list)
+``GET /resources/{resource-id}``
+``GET /resources/{resource-name}``
 
-If GET List does not contain resources (with/without filters) return an empty list or throw exception. **I prefer returning an empty list**.
+If ``GET`` list does not contain resources (with/without filters) return an empty list or throw exception. **I prefer returning an empty list**.
 
-Example of GET list:
+Example of ``GET`` list:
 ```
     @GetMapping
     @ApiOperation("Get information about all employees")
@@ -198,7 +227,7 @@ public class EmployeeFilter {
 }
 ```
 
-Example of GET resource:
+Example of ``GET`` resource:
 ```
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
@@ -209,14 +238,13 @@ Example of GET resource:
     }
 ```
 
+---
+
 #### POST
 
-POST /employees
+``POST /employees``
 
-If employee exists, throw exception. When employee is created:
-- Return OK;
-- Return OK and created resource id;
-- Return OK and entire created resource.
+If employee exists, throw exception - ``Bad Request (400)``.
 
 Questions:
 * How will respond look:
@@ -235,8 +263,9 @@ Example:
         this.employeeService.addEmployee(request);
     }
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY) //This won't be required in the future
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public record EmployeeRequest(
+        @NotNull Long socialSecurityNumber,
         @NotBlank @Size(max = 255) String name,
         @NotBlank @Size(max = 255) String lastName,
         @NotBlank @Size(max = 255) String team,
@@ -250,14 +279,15 @@ public record EmployeeRequest(
 
 ``PUT`` is idempotent.
 
-
 Questions:
 * What unique properties define resource?
 * Will you respond differently when resource was created/updated?
 
+> If the target resource does not have a current representation and the PUT successfully creates one, then the origin server MUST inform the user agent by sending a 201 (Created) response.  If the target
+>resource does have a current representation and that representation is successfully modified in accordance with the state of the enclosed representation, then the origin server MUST send either a 200 (OK) or
+>a 204 (No Content) response to indicate successful completion of the request.
 
 #### PATCH
-
 
 POST /resources (create) (if already exists throw 400)
 GET /resources/{resource-id} (if doesn't exist throw 404)
@@ -416,6 +446,22 @@ public class ExampleRequest {
     }
 ```
 Here, for example, team can be null. However, if we can define a default value for that property, we should do it using ```requireNonNullElse``` or ```requireNonNullElseGet```.
+
+
+
+https://stackoverflow.com/a/26328555/5486740
+
+For example, you probably should never use it for something that returns an array of results, or a list of results; instead return an empty array or list. You should almost never use it as a field of something or a method parameter.
+
+I think routinely using it as a return value for getters would definitely be over-use.
+
+There's nothing wrong with Optional that it should be avoided, it's just not what many people wish it were, and accordingly we were fairly concerned about the risk of zealous over-use.
+
+(Public service announcement: NEVER call Optional.get unless you can prove it will never be null; instead use one of the safe methods like orElse or ifPresent. In retrospect, we should have called get something like getOrElseThrowNoSuchElementException or something that made it far clearer that this was a highly dangerous method that undermined the whole purpose of Optional in the first place. Lesson learned. (UPDATE: Java 10 has Optional.orElseThrow(), which is semantically equivalent to get(), but whose name is more appropriate.))
+
+### Records and nullability
+
+https://mail.openjdk.java.net/pipermail/amber-dev/2020-March/005670.html
 
 ## Tests
 

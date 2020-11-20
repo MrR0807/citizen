@@ -1,7 +1,6 @@
 package com.good.citizen.employees.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.good.citizen.employees.repo.entity.EmployeeEntity;
 import com.good.citizen.employees.shared.JobTitle;
 
@@ -9,7 +8,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public record Employee(
         Long id,
         Long socialSecurityNumber,

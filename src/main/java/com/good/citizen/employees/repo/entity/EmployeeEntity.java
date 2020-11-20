@@ -1,5 +1,6 @@
 package com.good.citizen.employees.repo.entity;
 
+import com.good.citizen.employees.api.request.EmployeeRequest;
 import com.good.citizen.employees.shared.JobTitle;
 
 import javax.persistence.CascadeType;
@@ -43,6 +44,20 @@ public class EmployeeEntity {
     private Set<ProjectEntity> projects = new HashSet<>();
 
     public EmployeeEntity() {
+    }
+
+    public EmployeeEntity(Long socialSecurityNumber, String firstName, String lastName, JobTitle jobTitle,
+                          TeamEntity team, Set<ProjectEntity> projects) {
+        this.socialSecurityNumber = socialSecurityNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.jobTitle = jobTitle;
+        this.team = team;
+        this.projects = projects;
+    }
+
+    public static EmployeeEntity fromWithEmptyProjects(EmployeeRequest request, TeamEntity teamEntity) {
+        return new EmployeeEntity(request.socialSecurityNumber(), request.firstName(), request.lastName(), request.jobTitle(), teamEntity, Set.of());
     }
 
     public void joinProject(ProjectEntity project) {

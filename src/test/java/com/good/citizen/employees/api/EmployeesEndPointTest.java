@@ -12,12 +12,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
+import static com.good.citizen.employees.shared.JobTitle.PRODUCT_OWNER;
+import static com.good.citizen.employees.shared.JobTitle.SOFTWARE_DEVELOPER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
@@ -45,14 +49,14 @@ class EmployeesEndPointTest {
     @Test
     void getAllEmployees__givenTeamsFilter() {
         var url = UriComponentsBuilder.fromUriString(this.url)
-                .queryParam("team", "    team   bLUE    ") //weird type on purpose
+                .queryParam("team", "    bLUE    ") //weird type on purpose
                 .build().toString();
 
         var response = this.restTemplate.getForEntity(url, Employee[].class);
         var actualEmployees = List.of(response.getBody());
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(actualEmployees).extracting(Employee::team).containsOnly(new Team(1L, "Team Blue"));
+        assertThat(actualEmployees).extracting(Employee::team).containsOnly(new Team(1L, "Blue"));
     }
 
     @Test
@@ -90,6 +94,14 @@ class EmployeesEndPointTest {
     }
 
     @Test
+    void getEmployee__whenEmployeeDoesNotExists__thenReturn404() {
+        var response = this.restTemplate.getForEntity(this.url + "/999", ApiExceptionResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody().reason()).isEqualTo("Employee with id: 999 does not exist");
+    }
+
+    @Test
     void getEmployee__whenInvalidEmployeeId__thenReturn400() {
         var response = this.restTemplate.getForEntity(this.url + "/-1", ApiExceptionResponse.class);
 
@@ -102,10 +114,18 @@ class EmployeesEndPointTest {
 
     @Test
     void addEmployee() {
-        var request = new EmployeeRequest(1L, "Hello", "Lastname", "Team Green", JobTitle.PRODUCT_OWNER);
+        var request = new EmployeeRequest(1L, "Hello", "Lastname", "Green", JobTitle.PRODUCT_OWNER);
         var response = this.restTemplate.postForEntity(this.url, request, Employee.class);
+        var employee = response.getBody();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        //assertThat(employee).isEqualToComparingFieldByField(request); does not work due to how records are implemented
+        assertThat(employee.id()).isEqualTo(5L);
+        assertThat(employee.socialSecurityNumber()).isEqualTo(request.socialSecurityNumber());
+        assertThat(employee.firstName()).isEqualTo(request.firstName());
+        assertThat(employee.lastName()).isEqualTo(request.lastName());
+        assertThat(employee.team().name()).isEqualTo(request.team());
+        assertThat(employee.jobTitle()).isEqualTo(request.jobTitle());
     }
 
     @Test
@@ -127,6 +147,89 @@ class EmployeesEndPointTest {
     }
 
     @Test
-    void getAllProjects() {
+    void addEmployee__whenEmployeeExists__thenReturn400() {
+        var request = new EmployeeRequest(123456789L, "First", "Lastname", "Green", SOFTWARE_DEVELOPER);
+        var response = this.restTemplate.postForEntity(this.url, request, ApiExceptionResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().reason()).isEqualTo("Employee already exists");
+    }
+
+    /**
+     * In scrip V1.0__add_employees.sql exists (1, 123456789, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1)
+     */
+    @Test
+    void updateEmployee() {
+        var request = new EmployeeRequest(777_777_777L, "FirstuUpdate", "LastUpdate", "Red", PRODUCT_OWNER);
+        var response = this.restTemplate.postForEntity(this.url + "/1", request, Employee.class);
+        var employee = response.getBody();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(employee.id()).isEqualTo(1L);
+        assertThat(employee.socialSecurityNumber()).isEqualTo(777_777_777L);
+        assertThat(employee.firstName()).isEqualTo("FirstuUpdate");
+        assertThat(employee.lastName()).isEqualTo("LastUpdate");
+        assertThat(employee.team().name()).isEqualTo("Red");
+        assertThat(employee.jobTitle()).isEqualTo(PRODUCT_OWNER);
+    }
+
+    @Test
+    void updateEmployee__whenEmployeeDoesNotExists__thenReturn404() {
+        var request = new EmployeeRequest(777_777_777L, "FirstuUpdate", "LastUpdate", "Red", PRODUCT_OWNER);
+        var response = this.restTemplate.postForEntity(this.url + "/999", request, ApiExceptionResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody().reason()).isEqualTo("Employee with id: 999 does not exist");
+    }
+
+    @Test
+    void updateEmployee__givenInvalidTeam__return404() {
+        var request = new EmployeeRequest(777_777_777L, "FirstuUpdate", "LastUpdate", "Bad Team", PRODUCT_OWNER);
+        var response = this.restTemplate.postForEntity(this.url + "/999", request, ApiExceptionResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody().reason()).isEqualTo("Employee with id: 999 does not exist");
+    }
+
+    @Test
+    void putEmployee__whenDoesNotExists__thenCreate() {
+        var request = new EmployeeRequest(9L, "FirstuCreate", "LastCreate", "Red", PRODUCT_OWNER);
+        var response = this.restTemplate.exchange(this.url, HttpMethod.PUT, new HttpEntity<>(request), Employee.class);
+        var employee = response.getBody();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(employee.id()).isEqualTo(5L);
+        assertThat(employee.socialSecurityNumber()).isEqualTo(9L);
+        assertThat(employee.firstName()).isEqualTo("FirstuCreate");
+        assertThat(employee.lastName()).isEqualTo("LastCreate");
+        assertThat(employee.team().name()).isEqualTo("Red");
+        assertThat(employee.jobTitle()).isEqualTo(PRODUCT_OWNER);
+    }
+
+    /**
+     * In scrip V1.0__add_employees.sql exists (1, 123456789, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1)
+     */
+    @Test
+    void putEmployee__whenExists__thenUpdate() {
+        var request = new EmployeeRequest(123_456_789L, "FirstuUpdate", "LastUpdate", "Red", PRODUCT_OWNER);
+        var response = this.restTemplate.exchange(this.url, HttpMethod.PUT, new HttpEntity<>(request), Employee.class);
+        var employee = response.getBody();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(employee.id()).isEqualTo(1L);
+        assertThat(employee.socialSecurityNumber()).isEqualTo(123_456_789L);
+        assertThat(employee.firstName()).isEqualTo("FirstuUpdate");
+        assertThat(employee.lastName()).isEqualTo("LastUpdate");
+        assertThat(employee.team().name()).isEqualTo("Red");
+        assertThat(employee.jobTitle()).isEqualTo(PRODUCT_OWNER);
+    }
+
+    @Test
+    void putEmployee__whenInvalidRequest__then400() {
+        var request = new EmployeeRequest(-1L, "FirstuUpdate", "LastUpdate", "Does Not exists", PRODUCT_OWNER);
+        var response = this.restTemplate.exchange(this.url, HttpMethod.PUT, new HttpEntity<>(request), ApiExceptionResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().reason()).isEqualTo("One of the input fields contains invalid value");
     }
 }

@@ -46,14 +46,14 @@ CREATE TABLE employees.employee_project
 -------------------------------- Add Data --------------------------------
 
 INSERT INTO employees.team (id, name)
-VALUES (1, 'Team Blue'),
-       (2, 'Team Red'),
-       (3, 'Team Green');
+VALUES (1, 'Blue'),
+       (2, 'Red'),
+       (3, 'Green');
 
 INSERT INTO employees.project (id, name, budget)
-VALUES (1, 'Project One', 1000.0),
-       (2, 'Project Z', 1000000.0),
-       (3, 'Project X', null);
+VALUES (1, 'One', 1000.0),
+       (2, 'Z', 1000000.0),
+       (3, 'X', null);
 
 INSERT INTO employees.employee (id, social_security_number, first_name, last_name, job_title, team_id)
 VALUES (1, 123456789, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1),

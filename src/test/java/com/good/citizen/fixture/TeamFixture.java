@@ -8,14 +8,14 @@ public class TeamFixture {
     }
 
     public static Team firstTeam() {
-        return new Team(1L, "Team Blue");
+        return new Team(1L, "Blue");
     }
 
     public static Team secondTeam() {
-        return new Team(2L, "Team Red");
+        return new Team(2L, "Red");
     }
 
     public static Team thirdTeam() {
-        return new Team(3L, "Team Green");
+        return new Team(3L, "Green");
     }
 }

@@ -7,6 +7,7 @@ import com.good.citizen.employees.repo.EmployeeRepo;
 import com.good.citizen.employees.repo.TeamRepo;
 import com.good.citizen.employees.repo.entity.EmployeeEntity;
 import com.good.citizen.employees.repo.entity.TeamEntity;
+import com.good.citizen.exceptions.BadRequestException;
 import com.good.citizen.exceptions.NotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -32,32 +33,64 @@ public class EmployeeService {
     }
 
     public Employee getEmployee(Long id) {
+        return Employee.from(this.getEmployeeEntity(id));
+    }
+
+    private EmployeeEntity getEmployeeEntity(Long id) {
         return this.repo.getEmployee(id)
-                .map(Employee::from)
                 .orElseThrow(() -> new NotFoundException("Employee with id: %d does not exist".formatted(id)));
     }
 
-    @Transactional
-    public void addEmployee(EmployeeRequest request) {
-        var teamEntity = this.teamRepo.getTeam(request.team())
-                .orElseThrow(() -> new NotFoundException("Team with name: %s does not exists".formatted(request.team())));
-        var employeeEntity = mapToEntity(request, teamEntity);
-
-        this.repo.save(employeeEntity);
+    private TeamEntity getTeamEntity(String teamName) {
+        return this.teamRepo.getTeam(teamName)
+                .orElseThrow(() -> new NotFoundException("Team with name: %s does not exists".formatted(teamName)));
     }
 
-    private static EmployeeEntity mapToEntity(EmployeeRequest request, TeamEntity teamEntity) {
-        var employeeEntity = new EmployeeEntity();
+    @Transactional
+    public Employee addEmployee(EmployeeRequest request) {
+        if (this.repo.getEmployeeBySocialSecurityNumber(request.socialSecurityNumber()).isPresent()) {
+            throw new BadRequestException("Employee already exists");
+        }
+        return this.saveEmployee(request);
+    }
+
+    private Employee saveEmployee(EmployeeRequest request) {
+        var teamEntity = this.getTeamEntity(request.team());
+        var employeeEntity = EmployeeEntity.fromWithEmptyProjects(request, teamEntity);
+        this.repo.save(employeeEntity);
+
+        return Employee.from(employeeEntity);
+    }
+
+    @Transactional
+    public Employee updateEmployee(Long id, EmployeeRequest request) {
+        return this.repo.getEmployee(id)
+                .map(employeeEntity -> this.updateEmployee(request, employeeEntity))
+                .orElseThrow(() -> new NotFoundException("Employee with id: %d does not exist".formatted(id)));
+    }
+
+    private Employee updateEmployee(EmployeeRequest request, EmployeeEntity employeeEntity) {
         employeeEntity.setSocialSecurityNumber(request.socialSecurityNumber());
-        employeeEntity.setFirstName(request.name());
+        employeeEntity.setFirstName(request.firstName());
         employeeEntity.setLastName(request.lastName());
         employeeEntity.setJobTitle(request.jobTitle());
-        employeeEntity.setTeam(teamEntity);
-        return employeeEntity;
+        this.setTeam(request, employeeEntity);
+
+        return Employee.from(employeeEntity);
+    }
+
+    private void setTeam(EmployeeRequest request, EmployeeEntity employeeEntity) {
+        var doesNotContainSameTeam = !employeeEntity.getTeam().getName().equalsIgnoreCase(request.team());
+        if (doesNotContainSameTeam) {
+            var teamEntity = this.getTeamEntity(request.team());
+            employeeEntity.setTeam(teamEntity);
+        }
     }
 
     @Transactional
-    public void putEmployee(EmployeeRequest request) {
-
+    public Employee putEmployee(EmployeeRequest request) {
+        return this.repo.getEmployeeBySocialSecurityNumber(request.socialSecurityNumber())
+                .map(employeeEntity -> this.updateEmployee(request, employeeEntity))
+                .orElseGet(() -> this.saveEmployee(request));
     }
 }

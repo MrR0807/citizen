@@ -2,6 +2,7 @@ package com.good.citizen.employees.repo;
 
 import com.good.citizen.employees.api.request.EmployeeFilter;
 import com.good.citizen.employees.repo.entity.EmployeeEntity;
+import com.good.citizen.shared.RepoUtils;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -62,7 +63,7 @@ public class EmployeeRepo {
     }
 
     public Optional<EmployeeEntity> getEmployee(Long id) {
-        var employees = this.em.createQuery("""
+        var result = this.em.createQuery("""
                 SELECT e FROM EmployeeEntity e
                 JOIN FETCH e.projects p
                 JOIN FETCH e.team t
@@ -70,7 +71,16 @@ public class EmployeeRepo {
                 .setParameter("id", id)
                 .getResultList();
 
-        return Optional.ofNullable(employees.isEmpty() ? null : employees.get(0));
+        return RepoUtils.fromResultListToOptional(result);
+    }
+
+    public Optional<EmployeeEntity> getEmployeeBySocialSecurityNumber(Long number) {
+        var result = this.em.createQuery(
+                "SELECT e FROM EmployeeEntity e WHERE e.socialSecurityNumber = :socialSecurityNumber", EmployeeEntity.class)
+                .setParameter("socialSecurityNumber", number)
+                .getResultList();
+
+        return RepoUtils.fromResultListToOptional(result);
     }
 
     public void save(EmployeeEntity employee) {

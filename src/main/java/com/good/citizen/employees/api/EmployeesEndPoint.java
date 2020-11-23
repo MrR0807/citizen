@@ -2,6 +2,7 @@ package com.good.citizen.employees.api;
 
 import com.good.citizen.employees.api.request.EmployeeFilter;
 import com.good.citizen.employees.api.request.EmployeeRequest;
+import com.good.citizen.employees.api.request.PatchEmployeeRequest;
 import com.good.citizen.employees.model.Employee;
 import com.good.citizen.employees.service.EmployeeService;
 import io.swagger.annotations.ApiOperation;
@@ -70,15 +71,17 @@ public class EmployeesEndPoint {
     @PutMapping
     @ApiOperation("Add employee or update")
     public Employee putEmployee(@RequestBody @Valid EmployeeRequest request) {
-        LOGGER.info("Add or update employee. Employee: {}", request);
+        LOGGER.info("Add or update employee. Request: {}", request);
 
         return this.employeeService.putEmployee(request);
     }
 
     @PatchMapping("{id}")
     @ApiOperation("Update employee")
-    public void patchEmployee() {
+    public Employee patchEmployee(@PathVariable("id") @Min(0) Long id, @RequestBody PatchEmployeeRequest request) {
+        LOGGER.info("Patch employee. Request: {}", request);
 
+        return this.employeeService.patchEmployee(id, request);
     }
 
 }

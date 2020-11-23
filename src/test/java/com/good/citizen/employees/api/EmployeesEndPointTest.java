@@ -1,6 +1,7 @@
 package com.good.citizen.employees.api;
 
 import com.good.citizen.employees.api.request.EmployeeRequest;
+import com.good.citizen.employees.api.request.PatchEmployeeRequest;
 import com.good.citizen.employees.model.Employee;
 import com.good.citizen.employees.model.Team;
 import com.good.citizen.employees.shared.JobTitle;
@@ -20,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
+import static com.good.citizen.employees.shared.JobTitle.BUSINESS_ANALYST;
 import static com.good.citizen.employees.shared.JobTitle.PRODUCT_OWNER;
 import static com.good.citizen.employees.shared.JobTitle.SOFTWARE_DEVELOPER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -156,7 +158,7 @@ class EmployeesEndPointTest {
     }
 
     /**
-     * In scrip V1.0__add_employees.sql exists (1, 123456789, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1)
+     * In scrip V1.0__add_employees.sql exists (1, 123456789, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1). Last id is 1 which corresponds to Blue team
      */
     @Test
     void updateEmployee() {
@@ -207,7 +209,7 @@ class EmployeesEndPointTest {
     }
 
     /**
-     * In scrip V1.0__add_employees.sql exists (1, 123456789, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1)
+     * In scrip V1.0__add_employees.sql exists (1, 123456789, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1). Last id is 1 which corresponds to Blue team
      */
     @Test
     void putEmployee__whenExists__thenUpdate() {
@@ -231,5 +233,43 @@ class EmployeesEndPointTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().reason()).isEqualTo("One of the input fields contains invalid value");
+    }
+
+    /**
+     * In scrip V1.0__add_employees.sql exists (1, 123456789, 'First', 'Lastname', 'SOFTWARE_DEVELOPER', 1). Last id is 1 which corresponds to Blue team
+     */
+    @Test
+    void patchEmployee() {
+        var request = buildPatchRequest();
+        var response = this.restTemplate.exchange(this.url + "/1", HttpMethod.PATCH, new HttpEntity<>(request), Employee.class);
+        var employee = response.getBody();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(employee.id()).isEqualTo(1L);
+        assertThat(employee.socialSecurityNumber()).isEqualTo(78L);
+        assertThat(employee.firstName()).isEqualTo("PatchName");
+        assertThat(employee.lastName()).isEqualTo("PatchLast");
+        assertThat(employee.team().name()).isEqualTo("Green");
+        assertThat(employee.jobTitle()).isEqualTo(BUSINESS_ANALYST);
+    }
+
+    private static PatchEmployeeRequest buildPatchRequest() {
+        var request = new PatchEmployeeRequest();
+        request.setSocialSecurityNumber(78L);
+        request.setFirstName("PatchName");
+        request.setLastName("PatchLast");
+        request.setTeam("Green");
+        request.setJobTitle(BUSINESS_ANALYST);
+        return request;
+    }
+
+    @Test
+    void patchEmployee__whenEmployeeDoesNotExist__thenReturn404() {
+
+    }
+
+    @Test
+    void patchEmployee__whenInvalidRequest__thenReturn400() {
+
     }
 }

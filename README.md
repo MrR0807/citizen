@@ -1,18 +1,14 @@
-## How to launch
+## Goal
+
+This is an example of how good (in my opinion) application should look like.
+
+## How to launch (TODO)
 
 Either using docker compose, docker or kubernetes.
 
 ```
 mvn clean install
 ```
-
-TODO
-kubernetes
-
-
-## Goal
-
-This is an example of how good (in my opinion) application should look like.
 
 ## Lombok
 
@@ -95,6 +91,9 @@ Just return the object:
         return this.employeeService.getEmployee(id);
     }
 ```
+
+Unless you have clear need for specific Response, like ``ResponseEntity.noContent()``, ``ResponseEntity.created(uriLocation).body(body);`` 
+or ``ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(body);`` etc.
 
 ----
 
@@ -287,19 +286,11 @@ Questions:
 >resource does have a current representation and that representation is successfully modified in accordance with the state of the enclosed representation, then the origin server MUST send either a 200 (OK) or
 >a 204 (No Content) response to indicate successful completion of the request.
 
-#### PATCH
 
-POST /resources (create) (if already exists throw 400)
-GET /resources/{resource-id} (if doesn't exist throw 404)
-POST /resources/{resource-id} (update, if doesn't exist throw 404)
-PATCH /resources/{resource-id} (partial update, if doesn't exist throw 404)
-
-PUT (?) Indeponent opperation. Create or update? If exists create or update? Always return 200?
 
 ### PATCH
 
 https://tools.ietf.org/html/rfc7386
-
 
 ## Error Handling
 
@@ -590,7 +581,8 @@ Don't forget to check whether surefire or jacoco supports Java version.
 
 ## No Async/await frameworks
 
-ReactorX and friends. Project Loom/Virtual threads will cover 99% needs.
+> The performance we expect is similar to reactive frameworks. There is some added overhead, but I think it will be negligible in 99.9% of real-world use-cases.
+- Ron Pressler (Project Loom Lead)
 
 ```
 Thread.startVirtualThread(() -> {
@@ -598,7 +590,28 @@ Thread.startVirtualThread(() -> {
 });
 ```
 
-Key Takeaways:
+#### Thread "cost"
+
+| Platform Thread  | Virtual Thread |
+| ------------- | ------------- |
+| >2KB metadata  | 200-300B metadata  |
+| 1MB Stack  | Pay-as-you-go stack  |
+
+#### Context switching
+
+| Platform Thread  | Virtual Thread |
+| ------------- | ------------- |
+| 1-10µs  | ~200ns  |
+
+[Source](https://www.youtube.com/watch?v=fOEPEXTpbJA)
+
+#### Migration
+
+> If you have a common I/O operation guarded by a synchronized, replace the monitor with a ReentrantLock to let your application benefit fully from Loom’s scalability boost even before we fix 
+>pinning by monitors (or, better yet, use the higher-performance StampedLock if you can). Currently, they are working on making JDK libraries Loom-friendly.
+
+### Key Takeaways
+
 * A virtual thread is a Thread — in code, at runtime, in the debugger and in the profiler.
 * A virtual thread is not a wrapper around an OS thread, but a Java entity.
 * Creating a virtual thread is cheap — have millions, and don’t pool them!
@@ -702,4 +715,23 @@ would like to checkout to the head of named branch (using branch name), it will 
 
 ## Kotlin
 
-https://github.com/jacoco/jacoco/issues/1086
+### Kotlin and future compatibility
+
+> As far as the Java platform (AKA "the JVM") goes, Kotlin is painting itself into a corner. Kotlin was designed in 2009-10, in the Java 7 days, around the time of the Oracle acquisition, 
+>and at a time of stagnation for Java due to Sun's decline. At the time, Android was also quite similar to Java. Kotlin was a great design in those conditions. Things are very different today.
+
+> Kotlin's design goals are now contradictory. It seeks to be a low-overhead language, i.e. provide abstractions that don't add overhead over the target platform, give access to all platform capabilities, 
+>and at the same time target multiple platforms -- Java, Android, LLVM and JS -- over none of which does Kotlin exert much influence (maybe a bit on Android). Since 2010, Java has moved away from Android, 
+>to the point that there are very big gaps between the two, and they're only growing.
+
+> By both trying to target multiple platforms (with no say in their design) and trying to add little or no overhead, Kotlin will soon find itself in a bind. It's coroutines are in conflict with 
+>Java's upcoming virtual thread's design, and its inline classes will cause problems with Java's Valhalla vs. Android. Kotlin will have to choose to either give up on low-overhead abstractions, 
+>give up on some of its platforms, give up on giving access to full platform capabilities, or split into multiple languages, each targeting a different platform. For example, 
+>if Kotlin's inline types will make use of Valhalla, then they won't work on Android, at least not without much overhead.
+
+> TL;DR: A full-capability, low-overhead, multi-platform language is hard to pull off in the long run when you have low market share on all of those platforms (except Android) and little or no 
+>influence on any of them. This was viable under some accidental circumstances, but those are no longer holding.
+
+### Kotlin's other known issues
+
+* https://github.com/jacoco/jacoco/issues/1086

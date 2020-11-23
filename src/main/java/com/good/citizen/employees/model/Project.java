@@ -4,14 +4,17 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.good.citizen.employees.repo.entity.ProjectEntity;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Optional;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public record Project(
-        Long id,
-        String name,
-        Optional<BigDecimal> budget) {
+        @NotNull @Min(0) Long id,
+        @NotBlank String name,
+        @NotNull Optional<@NotNull @Min(0) BigDecimal> budget) {
 
     @JsonCreator
     public Project(Long id, String name, BigDecimal budget) {

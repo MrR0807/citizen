@@ -2,6 +2,7 @@ package com.good.citizen.employees.service;
 
 import com.good.citizen.employees.api.request.EmployeeFilter;
 import com.good.citizen.employees.api.request.EmployeeRequest;
+import com.good.citizen.employees.api.request.PatchEmployeeRequest;
 import com.good.citizen.employees.model.Employee;
 import com.good.citizen.employees.repo.EmployeeRepo;
 import com.good.citizen.employees.repo.TeamRepo;
@@ -92,5 +93,10 @@ public class EmployeeService {
         return this.repo.getEmployeeBySocialSecurityNumber(request.socialSecurityNumber())
                 .map(employeeEntity -> this.updateEmployee(request, employeeEntity))
                 .orElseGet(() -> this.saveEmployee(request));
+    }
+
+    public Employee patchEmployee(Long id, PatchEmployeeRequest request) {
+
+        return null;
     }
 }

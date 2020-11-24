@@ -2,10 +2,13 @@ package com.good.citizen.employees.api.request;
 
 import com.good.citizen.employees.shared.JobTitle;
 import com.good.citizen.shared.PatchField;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.validation.constraints.Min;
 
 public class PatchEmployeeRequest {
 
-    private PatchField<Long> socialSecurityNumber = PatchField.empty();
+    private PatchField<@Min(0) Long> socialSecurityNumber = PatchField.empty();
     private PatchField<String> firstName = PatchField.empty();
     private PatchField<String> lastName = PatchField.empty();
     private PatchField<String> team = PatchField.empty();
@@ -24,7 +27,7 @@ public class PatchEmployeeRequest {
     }
 
     public void setFirstName(String firstName) {
-        this.firstName = new PatchField<>(firstName);
+        this.firstName = new PatchField<>(StringUtils.normalizeSpace(firstName));
     }
 
     public PatchField<String> getLastName() {
@@ -32,7 +35,7 @@ public class PatchEmployeeRequest {
     }
 
     public void setLastName(String lastName) {
-        this.lastName = new PatchField<>(lastName);
+        this.lastName = new PatchField<>(StringUtils.normalizeSpace(lastName));
     }
 
     public PatchField<String> getTeam() {
@@ -40,7 +43,7 @@ public class PatchEmployeeRequest {
     }
 
     public void setTeam(String team) {
-        this.team = new PatchField<>(team);
+        this.team = new PatchField<>(StringUtils.normalizeSpace(team));
     }
 
     public PatchField<JobTitle> getJobTitle() {

@@ -14,7 +14,7 @@ public class EmployeeValidator extends Validator<Employee> {
     }
 
     @Override
-    protected void validate(Employee employee) {
+    public void validate(Employee employee) {
         var errors = this.javaxValidate(employee);
 
         if (errors.size() != 0) {

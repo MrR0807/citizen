@@ -10,6 +10,12 @@ Either using docker compose, docker or kubernetes.
 mvn clean install
 ```
 
+## Project Structure
+
+Package by feature not by layer.
+
+
+
 ## Lombok
 
 **Do not use Lombok**. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
@@ -286,11 +292,108 @@ Questions:
 >resource does have a current representation and that representation is successfully modified in accordance with the state of the enclosed representation, then the origin server MUST send either a 200 (OK) or
 >a 204 (No Content) response to indicate successful completion of the request.
 
+Example:
+```
+    @PutMapping
+    @ApiOperation("Add employee or update")
+    public Employee putEmployee(@RequestBody @Valid EmployeeRequest request) {
+        LOGGER.info("Add or update employee. Request: {}", request);
 
+        return this.employeeService.putEmployee(request);
+    }
+```
 
 ### PATCH
 
-https://tools.ietf.org/html/rfc7386
+There are two standards for PATCHING:
+* [JSON Patch](https://tools.ietf.org/html/rfc6902)
+* [JSON Merge Patch](https://tools.ietf.org/html/rfc7386)
+
+
+#### JSON Patch
+
+> The following is an example JSON Patch document, transferred in an
+```
+HTTP PATCH request:
+
+PATCH /my/data HTTP/1.1
+Host: example.org
+Content-Length: 326
+Content-Type: application/json-patch+json
+If-Match: "abc123"
+
+   [
+     { "op": "test", "path": "/a/b/c", "value": "foo" },
+     { "op": "remove", "path": "/a/b/c" },
+     { "op": "add", "path": "/a/b/c", "value": [ "foo", "bar" ] },
+     { "op": "replace", "path": "/a/b/c", "value": 42 },
+     { "op": "move", "from": "/a/b/c", "path": "/a/b/d" },
+     { "op": "copy", "from": "/a/b/d", "path": "/a/b/e" }
+   ]
+```
+
+Not going into much detail, this kind of PATCH'ing is not intuitive and complicated. I'd recommend to stick with JSON Merge Patch.
+
+#### JSON Merge Patch
+
+For example, given the following original JSON document:
+```
+{
+  "a": "b",
+  "c": {
+    "d": "e",
+    "f": "g"
+  }
+}
+```
+
+Changing the value of "a" and removing "f" can be achieved by sending:
+
+```
+PATCH /target HTTP/1.1
+Host: example.org
+Content-Type: application/merge-patch+json
+       
+{
+  "a":"z",
+  "c": {
+    "f": null
+  }
+}
+```
+
+When applied to the target resource, the value of the "a" member is replaced with "z" and "f" is removed, leaving the remaining content untouched.
+
+To acheive this in Java, I had to create a wrapper class ```PatchField<T>```. It solves Java's objects problem, where each object, if not initialized, will have default value. Objects will be set to 
+``null``. However, how can we know when ``null`` was set by consumer and when it was set during object creation.  
+
+Say, we have:
+```
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+public record EmployeeRequest(
+        Long socialSecurityNumber,
+        String name,
+        String lastName,
+        String team,
+        JobTitle jobTitle) {
+}
+```
+
+If I want to *nullify* only ``name`` and leave the rest of Employee properties unchanged I would pass:
+```
+{
+  "name": null
+}
+```
+
+However, all objects would be initialized as nulls in this case, and it would *nullify* everything.
+
+Enter ```PatchField<T>```:
+```
+
+
+
+``` 
 
 ## Error Handling
 

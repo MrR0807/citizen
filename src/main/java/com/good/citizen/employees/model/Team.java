@@ -5,11 +5,10 @@ import com.good.citizen.employees.repo.entity.TeamEntity;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public record Team(
-        @NotNull @Min(0) Long id,
+        @Min(0) Long id, //When Team is being persisted, it won't have an id
         @NotBlank String name) {
 
     public static Team from(TeamEntity entity) {

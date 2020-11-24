@@ -146,8 +146,9 @@
         <!--        <dependency>-->
         <!--            <groupId>io.soabase.record-builder</groupId>-->
         <!--            <artifactId>record-builder-core</artifactId>-->
-        <!--            <version>1.6.ea</version>-->
+        <!--            <version>1.11.ea</version>-->
         <!--        </dependency>-->
+
     </dependencies>
 
     <build>

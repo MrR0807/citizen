@@ -25,8 +25,8 @@ public class TeamRepo {
     }
 
     public Optional<TeamEntity> getTeam(String name) {
-        var result = this.em.createQuery("SELECT t FROM TeamEntity t where t.name = :name", TeamEntity.class)
-                .setParameter("name", name)
+        var result = this.em.createQuery("SELECT t FROM TeamEntity t where lower(t.name) = :name", TeamEntity.class)
+                .setParameter("name", name.toLowerCase())
                 .getResultList();
 
         return RepoUtils.fromResultListToOptional(result);

@@ -14,13 +14,13 @@ public abstract class Validator<T> {
         this.javaxValidator = javaxValidator;
     }
 
-    public ApiExceptionDetails[] mapFromErrors(List<Result.Error> errors) {
+    protected ApiExceptionDetails[] mapFromErrors(List<Result.Error> errors) {
         return errors.stream()
                 .map(Result.Error::getDetails)
                 .toArray(ApiExceptionDetails[]::new);
     }
 
-    public List<Result.Error> validateViewGiven(List<? extends Validation<T>> validations, T t) {
+    protected List<Result.Error> validateViewGiven(List<? extends Validation<T>> validations, T t) {
         return validations.stream()
                 .filter(validation -> validation.supports(t))
                 .map(validation -> validation.validate(t))
@@ -29,7 +29,7 @@ public abstract class Validator<T> {
                 .collect(Collectors.toList());
     }
 
-    public List<Result.Error> javaxValidate(T t) {
+    protected List<Result.Error> javaxValidate(T t) {
         return this.javaxValidator.validate(t);
     }
 

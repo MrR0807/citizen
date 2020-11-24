@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public record Project(
-        @NotNull @Min(0) Long id,
+        @Min(0) Long id, //When Project is created in won't have an id
         @NotBlank String name,
         @NotNull Optional<@NotNull @Min(0) BigDecimal> budget) {
 

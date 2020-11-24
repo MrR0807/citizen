@@ -57,7 +57,7 @@ public class EmployeesEndPoint {
     public Employee addEmployee(@RequestBody @Valid EmployeeRequest request) {
         LOGGER.info("Add employee. Request: {}", request);
 
-        return this.employeeService.addEmployee(request);
+        return this.employeeService.addEmployee(request.toEmployee());
     }
 
     @PostMapping("{id}")
@@ -65,7 +65,7 @@ public class EmployeesEndPoint {
     public Employee updateEmployee(@PathVariable("id") @Min(0) Long id, @RequestBody @Valid EmployeeRequest request) {
         LOGGER.info("Update employee. Employee id: {}. Request: {}", id, request);
 
-        return this.employeeService.updateEmployee(id, request);
+        return this.employeeService.updateEmployee(id, request.toEmployee());
     }
 
     @PutMapping
@@ -73,15 +73,14 @@ public class EmployeesEndPoint {
     public Employee putEmployee(@RequestBody @Valid EmployeeRequest request) {
         LOGGER.info("Add or update employee. Request: {}", request);
 
-        return this.employeeService.putEmployee(request);
+        return this.employeeService.putEmployee(request.toEmployee());
     }
 
     @PatchMapping("{id}")
-    @ApiOperation("Update employee")
-    public Employee patchEmployee(@PathVariable("id") @Min(0) Long id, @RequestBody PatchEmployeeRequest request) {
+    @ApiOperation("Patch employee")
+    public Employee patchEmployee(@PathVariable("id") @Min(0) Long id, @RequestBody @Valid PatchEmployeeRequest request) {
         LOGGER.info("Patch employee. Request: {}", request);
 
         return this.employeeService.patchEmployee(id, request);
     }
-
 }

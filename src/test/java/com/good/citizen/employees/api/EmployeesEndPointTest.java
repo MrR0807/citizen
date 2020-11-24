@@ -1,7 +1,6 @@
 package com.good.citizen.employees.api;
 
 import com.good.citizen.employees.api.request.EmployeeRequest;
-import com.good.citizen.employees.api.request.PatchEmployeeRequest;
 import com.good.citizen.employees.model.Employee;
 import com.good.citizen.employees.model.Team;
 import com.good.citizen.employees.shared.JobTitle;
@@ -14,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -240,8 +241,7 @@ class EmployeesEndPointTest {
      */
     @Test
     void patchEmployee() {
-        var request = buildPatchRequest();
-        var response = this.restTemplate.exchange(this.url + "/1", HttpMethod.PATCH, new HttpEntity<>(request), Employee.class);
+        var response = this.restTemplate.exchange(this.url + "/1", HttpMethod.PATCH, buildPatchRequest(), Employee.class);
         var employee = response.getBody();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -253,23 +253,40 @@ class EmployeesEndPointTest {
         assertThat(employee.jobTitle()).isEqualTo(BUSINESS_ANALYST);
     }
 
-    private static PatchEmployeeRequest buildPatchRequest() {
-        var request = new PatchEmployeeRequest();
-        request.setSocialSecurityNumber(78L);
-        request.setFirstName("PatchName");
-        request.setLastName("PatchLast");
-        request.setTeam("Green");
-        request.setJobTitle(BUSINESS_ANALYST);
-        return request;
+    private static HttpEntity<String> buildPatchRequest() {
+        var requestBody = """
+                {
+                  "firstName": "PatchName",
+                  "jobTitle": "BUSINESS_ANALYST",
+                  "lastName": "PatchLast",
+                  "socialSecurityNumber": 78,
+                  "team": "GREEN"
+                }
+                """;
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        return new HttpEntity<>(requestBody, headers);
     }
 
     @Test
     void patchEmployee__whenEmployeeDoesNotExist__thenReturn404() {
+        var request = buildPatchRequest();
+        var response = this.restTemplate.exchange(this.url + "/999", HttpMethod.PATCH, new HttpEntity<>(request), ApiExceptionResponse.class);
 
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody().reason()).isEqualTo("Employee with id: 999 does not exist");
     }
 
     @Test
     void patchEmployee__whenInvalidRequest__thenReturn400() {
+        var request = buildPatchRequest();
+//        request.setFirstName("   "); //Setting blank should trigger validator
+        var response = this.restTemplate.exchange(this.url + "/1", HttpMethod.PATCH, new HttpEntity<>(request), ApiExceptionResponse.class);
 
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().reason()).isEqualTo("One of the input fields contains invalid value");
+        assertThat(response.getBody().exceptions()).hasSize(1);
+        assertThat(response.getBody().exceptions()).element(0).extracting(ApiExceptionDetails::message).isEqualTo("");
     }
 }

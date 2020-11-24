@@ -1,6 +1,6 @@
 package com.good.citizen.employees.repo.entity;
 
-import com.good.citizen.employees.api.request.EmployeeRequest;
+import com.good.citizen.employees.model.Employee;
 import com.good.citizen.employees.shared.JobTitle;
 
 import javax.persistence.CascadeType;
@@ -56,8 +56,8 @@ public class EmployeeEntity {
         this.projects = projects;
     }
 
-    public static EmployeeEntity fromWithEmptyProjects(EmployeeRequest request, TeamEntity teamEntity) {
-        return new EmployeeEntity(request.socialSecurityNumber(), request.firstName(), request.lastName(), request.jobTitle(), teamEntity, Set.of());
+    public static EmployeeEntity fromWithEmptyProjects(Employee employee, TeamEntity teamEntity) {
+        return new EmployeeEntity(employee.socialSecurityNumber(), employee.firstName(), employee.lastName(), employee.jobTitle(), teamEntity, Set.of());
     }
 
     public void joinProject(ProjectEntity project) {

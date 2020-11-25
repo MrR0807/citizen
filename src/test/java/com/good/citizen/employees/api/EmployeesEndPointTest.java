@@ -293,6 +293,6 @@ class EmployeesEndPointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().reason()).isEqualTo("Employee contains invalid parameters");
         assertThat(response.getBody().exceptions()).hasSize(1);
-        assertThat(response.getBody().exceptions()).element(0).extracting(ApiExceptionDetails::message).isEqualTo("");
+        assertThat(response.getBody().exceptions()).element(0).extracting(ApiExceptionDetails::message).isEqualTo("must not be blank");
     }
 }

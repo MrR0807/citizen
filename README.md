@@ -14,7 +14,22 @@ mvn clean install
 
 Package by feature not by layer.
 
+[Great article](https://phauer.com/2020/package-by-feature/). Below information is taken from it:
 
+* Drawbacks of **packaging classes by technical concerns**:
+  *  Poor overview of all classes that belong to a feature.
+  *  Tendency to generic, reused and complex code, which is hard to understand and changes can easily break other use cases as the impact of a change is hard to grasp. 
+  Often, this approach leads to central classes containing all methods for every use case. Over time, those methods get more and more 
+  abstracted (with extra parameters and generics) to fulfill more use cases.
+* Instead, package **by feature** and create packages that contain all classes that are required for a feature. The benefits are:
+  *  Better discoverability and overview
+  *  Self-contained and independent
+  *  Simpler code
+  *  Testability
+  
+![package-by-layer.PNG](pictures/package-by-layer.PNG)
+
+![package-by-feature.PNG](pictures/package-by-feature.PNG)
 
 ## Lombok
 
@@ -181,7 +196,7 @@ If you want to have filters for endpoints, like so:
     }
 ```
 
-Make sure to use ```@JsonCreator``` and getters, because Spring does not support Records for request params yet.
+Make sure to use ```@JsonCreator``` and getters, because Spring does not support Records for request params yet as of Spring Boot 2.3. Have not tested with higher versions.
 
 ---
 
@@ -299,7 +314,8 @@ public record EmployeeRequest(
 
 #### PUT
 
-> The PUT method requests that the state of the target resource be created or replaced with the state defined by the representation enclosed in the request message payload.
+> The PUT method requests that the state of the target resource be **created or replaced** with the state defined by the representation enclosed 
+>in the request message payload.
 
 ``PUT`` is idempotent.
 
@@ -382,9 +398,9 @@ Content-Type: application/merge-patch+json
 
 When applied to the target resource, the value of the "a" member is replaced with "z" and "f" is removed, leaving the remaining content untouched.
 
-To acheive this in Java, I had to create a wrapper class ```PatchField<T>```. It solves Java's objects problem, where each object, if not initialized, 
-will have default value (``null`` for reference types, ``false`` for boolean and ``0`` for numbers). However, how can we know when ``null`` was set by consumer 
-and when it was set during object creation.  
+To acheive this in Java, I had to create a wrapper class ```PatchField<T>```. It solves Java's objects problem, where each object/property, if not initialized, 
+will have default value (``null`` for reference types, ``false`` for primitive boolean and ``0`` for primitive numbers). 
+However, how can we know when ``null`` was set by consumer and when it was set during object creation.  
 
 Say, we have:
 ```
@@ -454,7 +470,7 @@ We require to have ``Getters`` and ``Setters``, because Jackson invokes setters 
 only ``name``. We also require to initialize each property with ``PatchField.empty();`` to differentiate when PatchField instance set by deserializing framework and 
 when by us.
 
-Lastly, if you won't to add jakarta validation annotations on Type parameters, like ``PatchField<@Min(0) Long> socialSecurityNumber``, you have to 
+Lastly, if you want to add jakarta validation annotations on Type parameters, like ``PatchField<@Min(0) Long> socialSecurityNumber``, you have to 
 create custom ``Extractor`` and register with Spring.
 
 Extractor as [per documentation](https://docs.jboss.org/hibernate/validator/6.0/reference/en-US/html_single/#_implementing_a_code_valueextractor_code):
@@ -572,7 +588,8 @@ query instead of allowing N+1 problem via ``FetchType.EAGER``.
 
 ### Entities
 
-``equals`` and ``hashCode`` is implemented according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* or in this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
+``equals`` and ``hashCode`` is implemented according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* page 192
+or in this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
 
 ---
 
@@ -584,7 +601,28 @@ If entity can return null value, wrap *getter* into ``Optional``.
 
 ---
 
-Bidirectional synchronized methods.
+---
+
+Use ``LocalDateTime`` and friends from ``java.time`` for representation of date instead of legacy ``Date``.
+
+---
+
+#### Performant relationships
+
+![jpa-relationships.png](pictures/jpa-relationships.png)
+
+
+[Source](https://vladmihalcea.com/14-high-performance-java-persistence-tips/)
+
+
+For collections use Sets (``@ElementCollection`` including) and always implement ``equals`` and ``hashCode`` according Vlad Mihalcea.
+
+---
+
+#### Bidirectional synchronized methods.
+
+Even though it is adviced to use synchronized method, it's unclear why. Outstanding stackoverflow [question](https://stackoverflow.com/questions/64487322/why-do-we-need-bidirectional-synchronized-methods). 
+
 > Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times.
 The addPhone() and removePhone() are utility methods that synchronize both ends whenever a child element is added or removed:
 
@@ -629,25 +667,52 @@ public class ExampleRequest {
 ```
 Here, for example, team can be null. However, if we can define a default value for that property, we should do it using ```requireNonNullElse``` or ```requireNonNullElseGet```.
 
+### When to use Optional according to Bryan Goetz
 
+[Stackoverflow answer](https://stackoverflow.com/a/26328555/5486740):
 
-https://stackoverflow.com/a/26328555/5486740
+> For example, you probably should never use it for something that returns an array of results, or a list of results; instead return an empty array or list. 
+> You should almost never use it as a field of something or a method parameter.
+> I think routinely using it as a return value for getters would definitely be over-use. (!)
 
-For example, you probably should never use it for something that returns an array of results, or a list of results; instead return an empty array or list. You should almost never use it as a field of something or a method parameter.
-
-I think routinely using it as a return value for getters would definitely be over-use.
-
-There's nothing wrong with Optional that it should be avoided, it's just not what many people wish it were, and accordingly we were fairly concerned about the risk of zealous over-use.
-
-(Public service announcement: NEVER call Optional.get unless you can prove it will never be null; instead use one of the safe methods like orElse or ifPresent. In retrospect, we should have called get something like getOrElseThrowNoSuchElementException or something that made it far clearer that this was a highly dangerous method that undermined the whole purpose of Optional in the first place. Lesson learned. (UPDATE: Java 10 has Optional.orElseThrow(), which is semantically equivalent to get(), but whose name is more appropriate.))
+> (Public service announcement: NEVER call ``Optional.get`` unless you can prove it will never be null; instead use one of the safe methods like ``orElse`` or ``ifPresent``. 
+> In retrospect, we should have called get something like ``getOrElseThrowNoSuchElementException`` or something that made it far clearer that this was a 
+> highly dangerous method that undermined the whole purpose of ``Optional`` in the first place. Lesson learned. 
+> (UPDATE: Java 10 has ``Optional.orElseThrow()``, which is semantically equivalent to ``get()``, but whose name is more appropriate.))
 
 ### Records and nullability
+[Intial question on OpenJDK mailing list](https://mail.openjdk.java.net/pipermail/amber-dev/2020-March/005670.html)
 
-https://mail.openjdk.java.net/pipermail/amber-dev/2020-March/005670.html
+Suggestions from [mailing list](https://mail.openjdk.java.net/pipermail/amber-dev/2020-March/005671.html).
+
+Either you declare the component optional:
+```
+record Person(Optional<String> name) { }
+```
+or don't declare the component ``Optional`` but burn the accessor:
+```
+record Person(String name /*may be null*/) {
+    public String name() {
+      throw new UnsupportedOperationException("name is optional");
+    }
+    public Optional<String> optionalName() {
+      return Optional.ofNullable(name);
+    }
+  }
+```
+
+However, there was another suggestion, which **I like the most** (I cannot find the source):
+```
+public record Person(Optional<String> name) {
+
+    @JsonCreator
+    public Person(String name) {
+        this(Optional.ofNullable(name));
+    }
+}
+``` 
 
 ## Tests
-
-
 
 ### Naming
 
@@ -661,17 +726,21 @@ Example:
 ### Integration Tests
 
 Reuse Spring's Application Context as much as possible. This will speed up your tests, because it doesn't need to restart, 
-thus in perfect conditions, you'd only need to start Spring's Application once. To acheive this:
+thus in perfect conditions, you'd only need to start Spring's Application once. To achieve this:
 * Create a single annotation (see @IntegrationTest in test folder); 
 * Class which each integration test extends.
 
 ---
-
-Testing time.
+#### Testing time
 
 TimeMachine class.
 
-**Avoid @MockBeans.**
+---
+#### Avoid ``@MockBeans``
+
+It will restart Spring's application.
+
+---
 
 ### Testing communication with other services
 
@@ -686,7 +755,6 @@ TimeMachine class.
 assertThat(responseFrame).hasNoNullFieldsOrProperties();
 ```
 If property wrapped into ``Optional``, it is not null, hence the assertion will pass.
-
 
 ### Resources
 
@@ -704,6 +772,7 @@ Favor construction injections vs setter/property injections. From Spring documen
 
 If you have multiple properties, prefer to use [Type-safe Configuration Properties](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-typesafe-configuration-properties).
 
+Below example, in the future, will most likely work with ``records``. 
 ```
 @ConstructorBinding
 @ConfigurationProperties("acme")
@@ -768,6 +837,12 @@ However they fail only when running with `mvn test`, but they succeed when launc
 
 Don't forget to check whether surefire or jacoco supports Java version.
 
+---
+
+TODO
+
+http://andresalmiray.com/detecting-duplicate-dependencies-in-maven/
+
 ## HTTP Client
 
 ## No Async/await frameworks
@@ -801,6 +876,32 @@ Thread.startVirtualThread(() -> {
 > If you have a common I/O operation guarded by a synchronized, replace the monitor with a ReentrantLock to let your application benefit fully from Loom’s scalability boost even before we fix 
 >pinning by monitors (or, better yet, use the higher-performance StampedLock if you can). Currently, they are working on making JDK libraries Loom-friendly.
 
+### Structured concurrency
+
+Structured concurrency corrals thread lifetimes into code blocks. Its basic principle is this: threads that are created in some code unit must all terminate by the time we 
+exit that code unit:
+
+```
+ThreadFactory vtf = Thread.builder().virtual().factory();
+try (ExecutorService e = Executors.newUnboundedExecutor(vtf)) {
+   e.submit(task1);
+   e.submit(task2);
+} // blocks and waits
+```
+
+Before we exit the TWR block, the current thread will block, waiting for all tasks — and their threads — to finish. Once outside it, we are guaranteed that the 
+tasks have terminated.
+
+#### Structured Interruption
+
+```
+try (var e = Executors.newUnboundedExecutor(myThreadFactory)
+                      .withDeadline(Instant.now().plusSeconds(30))) {
+   e.submit(task1);
+   e.submit(task2);
+}
+```
+
 ### Key Takeaways
 
 * A virtual thread is a Thread — in code, at runtime, in the debugger and in the profiler.
@@ -813,20 +914,11 @@ Thread.startVirtualThread(() -> {
 Resources:
 * [State of Loom](https://cr.openjdk.java.net/~rpressler/loom/loom/sol1_part1.html)
 * [Taking Project Loom for a spin](https://renato.athaydes.com/posts/taking-loom-for-a-spin.html)
+* [Github Loom benchmarks](https://github.com/tipsy/loomylin)
 * [Project Loom - Modern Scalable Concurrency for the Java Platform](https://inside.java/2020/09/17/project-loom/)
 * [On the Performance of User-Mode Threads and Coroutines](https://inside.java/2020/08/07/loom-performance/) 
 
 ## Application.yaml
-
-Flyway configuration:
-```
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    ignore-missing-migrations: true #After some time you'll want to archive migrations scripts
-    locations: classpath:/db/migration/h2
-    installed-by: laurynas
-```
 
 Full ``application.yml``:
 ```
@@ -895,9 +987,94 @@ management:
       enabled: true
 ```
 
+Examine each step by step.
+
+---
+
+### Flyway configuration
+```
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    ignore-missing-migrations: true #After some time you'll want to archive migrations scripts
+    locations: classpath:/db/migration/h2
+    installed-by: laurynas
+```
+
+---
+
+### Datasource
+```
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:citizen;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    platform: h2
+```
+
+---
+
+### JPA
+```
+  jpa:
+    database: h2
+    show-sql: true #Use ``true`` only when you need to debug. Otherwise performance will degraded due to stoud'ing all SQL opperations 
+    generate-ddl: false #Never let Hibernate/JPA generate your database schemas. Otherwise, you might find surprises if you've annotated incorrectly. See unidirectional @OneToMany. 
+    hibernate:
+      ddl-auto: none #Do not autogenerate SQL tables. Sometimes it might lead to suboptimal structures/types. Control you database!
+    properties:
+      hibernate:
+        #Turn it on only when you need for analysing queries. Do not leave it on!
+        generate_statistics: false
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+    open-in-view: false #Do not allow Spring to automagically fetch data from database. See https://vladmihalcea.com/the-open-session-in-view-anti-pattern/
+```
+
+---
+
+### Management endpoints
+
+```
+management:
+  endpoints:
+    enabled-by-default: false # endpoint enablement to be opt-in rather than opt-out
+    web:
+      exposure:
+        include: health, info, prometheus, metrics #exclude everything except health, info, prometheus endpoints
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+```
+
 ## Kubernetes pod template
 
-## Database migration
+## Database
+
+### Database migration
+
+### Database types
+
+#### SQL Server
+
+For datetime use ```datetime2```. Mainly this [stackoverflow question has all the answers](https://stackoverflow.com/questions/1334143/datetime2-vs-datetime-in-sql-server/1334193):
+> datetime2 wins in most aspects except (old apps Compatibility)
+> - larger range of values
+> - better Accuracy
+> - smaller storage space (if optional user-specified precision is specified)
+
+For binary data (e.g. ``byte[]``) save into ``VARBINARY(MAX)``: 
+> if your pictures or document are typically below 256KB in size, storing them in a database VARBINARY column is more efficient.
+
+[Stackoverflow question and answer](https://stackoverflow.com/questions/5613898/storing-images-in-sql-server)
+
+### Use DateTime instead of V1, V2 etc
 
 ## Git
 

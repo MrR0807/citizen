@@ -10,6 +10,10 @@ class TeamsEndPointTest {
     @Value("${application.endpoints.teams}")
     private String url;
 
+//    For demo purpose
+//    @MockBean
+//    private EmployeeService employeeService;
+
     @Test
     void getAllTeams() {
     }

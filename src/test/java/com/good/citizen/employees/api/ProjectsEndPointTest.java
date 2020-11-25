@@ -10,6 +10,10 @@ class ProjectsEndPointTest {
     @Value("${application.endpoints.projects}")
     private String url;
 
+//    For demo purpose
+//    @MockBean
+//    private ProjectsService projectsService;
+
     @Test
     void getAllProjects() {
     }

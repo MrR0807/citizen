@@ -1,9 +1,9 @@
 package com.good.citizen.shared;
 
+import javax.validation.ClockProvider;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
@@ -20,10 +20,11 @@ public class TimeMachine {
     }
 
     public static LocalDate infiniteFuture() {
-        return LocalDate.of(9999,12,31);
+        return LocalDate.of(9999, 12, 31);
     }
+
     public static LocalDate infinitePast() {
-        return LocalDate.of(1970,01,01);
+        return LocalDate.of(1970, 1, 1);
     }
 
     public static LocalDateTime nowLocalDateAndTime() {
@@ -38,10 +39,7 @@ public class TimeMachine {
         return clock;
     }
 
-    // If period contains more than 0 days, adds additional month
-    public static Integer getNumberOfMonthsBetweenDates(LocalDate startDate, LocalDate endDate) {
-        Period period = Period.between(startDate, endDate);
-
-        return period.getYears() * 12 + period.getMonths() + (period.getDays() > 0 ? 1 : 0);
+    public static ClockProvider getClockProvider() {
+        return () -> clock;
     }
 }

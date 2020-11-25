@@ -280,12 +280,18 @@ class EmployeesEndPointTest {
 
     @Test
     void patchEmployee__whenInvalidRequest__thenReturn400() {
-        var request = buildPatchRequest();
-//        request.setFirstName("   "); //Setting blank should trigger validator
-        var response = this.restTemplate.exchange(this.url + "/1", HttpMethod.PATCH, new HttpEntity<>(request), ApiExceptionResponse.class);
+        var request = """
+                {
+                  "firstName": "       "
+                }
+                """; //Setting blank should trigger EmployeeValidator
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        var response = this.restTemplate.exchange(this.url + "/1", HttpMethod.PATCH, new HttpEntity<>(request, headers), ApiExceptionResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody().reason()).isEqualTo("One of the input fields contains invalid value");
+        assertThat(response.getBody().reason()).isEqualTo("Employee contains invalid parameters");
         assertThat(response.getBody().exceptions()).hasSize(1);
         assertThat(response.getBody().exceptions()).element(0).extracting(ApiExceptionDetails::message).isEqualTo("");
     }

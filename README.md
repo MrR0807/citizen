@@ -19,7 +19,7 @@ Package by feature not by layer.
 ## Lombok
 
 **Do not use Lombok**. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
-should cover almost all cases.
+should cover almost all cases like DTO's and Request/Response models only exception I see is with entities.
 
 ```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small part of your application, and does not justify adding Lombok. 
 If you're truly bothered by getters/setters you can just make properties ``public``. 
@@ -57,6 +57,25 @@ The addPhone() and removePhone() are utility methods that synchronize both ends 
 [Source - Vlad Mihalcea Blog](https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/)
 
 * Bad equals and hashcode implementations. [Vlad Michalcea Blog](https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/)
+
+#### Lombok and Logger
+
+Lombok solution:
+```
+@Slf4j
+public class LogExample {}
+
+//Generates 
+
+public class LogExample {
+ private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LogExample.class);
+}
+```
+
+Just use IntelliJ live template and it will generate this for you with a small shortcut. Mine called ``lger``:
+```
+private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger($CLASS$.class);
+```
 
 ## Endpoints
 
@@ -305,14 +324,13 @@ Example:
 
 ### PATCH
 
-There are two standards for PATCHING:
+There are two standards for PATCH'ing:
 * [JSON Patch](https://tools.ietf.org/html/rfc6902)
 * [JSON Merge Patch](https://tools.ietf.org/html/rfc7386)
 
-
 #### JSON Patch
 
-> The following is an example JSON Patch document, transferred in an
+> The following is an example JSON Patch document:
 ```
 HTTP PATCH request:
 
@@ -364,8 +382,9 @@ Content-Type: application/merge-patch+json
 
 When applied to the target resource, the value of the "a" member is replaced with "z" and "f" is removed, leaving the remaining content untouched.
 
-To acheive this in Java, I had to create a wrapper class ```PatchField<T>```. It solves Java's objects problem, where each object, if not initialized, will have default value. Objects will be set to 
-``null``. However, how can we know when ``null`` was set by consumer and when it was set during object creation.  
+To acheive this in Java, I had to create a wrapper class ```PatchField<T>```. It solves Java's objects problem, where each object, if not initialized, 
+will have default value (``null`` for reference types, ``false`` for boolean and ``0`` for numbers). However, how can we know when ``null`` was set by consumer 
+and when it was set during object creation.  
 
 Say, we have:
 ```
@@ -390,9 +409,76 @@ However, all objects would be initialized as nulls in this case, and it would *n
 
 Enter ```PatchField<T>```:
 ```
+public record PatchField<T>(boolean isSet, T value) {
 
+    public PatchField(T value) {
+        this(true, value);
+    }
 
+    public static <T> PatchField<T> empty() {
+        return new PatchField<>(false, null);
+    }
 
+    public void ifSet(Consumer<? super T> action) {
+        if (this.isSet) {
+            action.accept(this.value);
+        }
+    }
+}
+``` 
+
+And ``PatchEmployeeRequest`` looks like so:
+```
+public class PatchEmployeeRequest {
+
+    private PatchField<@Min(0) Long> socialSecurityNumber = PatchField.empty();
+    private PatchField<String> firstName = PatchField.empty();
+    private PatchField<String> lastName = PatchField.empty();
+    private PatchField<String> team = PatchField.empty();
+    private PatchField<JobTitle> jobTitle = PatchField.empty();
+
+    public PatchField<Long> getSocialSecurityNumber() {
+        return this.socialSecurityNumber;
+    }
+
+    public void setSocialSecurityNumber(Long socialSecurityNumber) {
+        this.socialSecurityNumber = new PatchField<>(socialSecurityNumber);
+    }    
+
+    //Remaining getters and Setters
+    ...
+}
+```
+
+We require to have ``Getters`` and ``Setters``, because Jackson invokes setters only on those methods which were in the request body. In this example's case - 
+only ``name``. We also require to initialize each property with ``PatchField.empty();`` to differentiate when PatchField instance set by deserializing framework and 
+when by us.
+
+Lastly, if you won't to add jakarta validation annotations on Type parameters, like ``PatchField<@Min(0) Long> socialSecurityNumber``, you have to 
+create custom ``Extractor`` and register with Spring.
+
+Extractor as [per documentation](https://docs.jboss.org/hibernate/validator/6.0/reference/en-US/html_single/#_implementing_a_code_valueextractor_code):
+```
+public class PatchFieldValueExtractor implements ValueExtractor<PatchField<@ExtractedValue ?>> {
+
+    @Override
+    public void extractValues(PatchField<?> originalValue, ValueReceiver receiver) {
+        receiver.value(null, originalValue.value());
+    }
+}
+```
+
+Register with Spring:
+```
+@Component
+public class CustomLocalValidatorFactoryBean extends LocalValidatorFactoryBean {
+
+    @Override
+    protected void postProcessConfiguration(Configuration<?> configuration) {
+        super.postProcessConfiguration(configuration);
+        configuration.addValueExtractor(new PatchFieldValueExtractor());
+    }
+}
 ``` 
 
 ## Error Handling
@@ -481,6 +567,8 @@ A more elaborate comparison is in ``getAllEmployees`` where filter is given as a
 In this particular case Spring Data's ``Specification`` API is not useful when data is fetched with ``JOINS``. 
 However, I have created ``EmployeeRepoSpringData``, using ``Example`` API. Unfortunately it does not work if you want to fetch associations in your 
 query instead of allowing N+1 problem via ``FetchType.EAGER``.
+
+#### TODO Remove scanning of Spring Data 
 
 ### Entities
 

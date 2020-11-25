@@ -2,13 +2,13 @@ package com.good.citizen.employees.service;
 
 import com.good.citizen.employees.api.request.EmployeeFilter;
 import com.good.citizen.employees.api.request.PatchEmployeeRequest;
-import com.good.citizen.employees.api.validator.EmployeeValidator;
 import com.good.citizen.employees.model.Employee;
 import com.good.citizen.employees.model.Team;
 import com.good.citizen.employees.repo.EmployeeRepo;
 import com.good.citizen.employees.repo.TeamRepo;
 import com.good.citizen.employees.repo.entity.EmployeeEntity;
 import com.good.citizen.employees.repo.entity.TeamEntity;
+import com.good.citizen.employees.service.validator.EmployeeValidator;
 import com.good.citizen.exceptions.BadRequestException;
 import com.good.citizen.exceptions.NotFoundException;
 import org.springframework.stereotype.Service;

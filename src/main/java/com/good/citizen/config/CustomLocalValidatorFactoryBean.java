@@ -11,7 +11,6 @@ public class CustomLocalValidatorFactoryBean extends LocalValidatorFactoryBean {
     @Override
     protected void postProcessConfiguration(Configuration<?> configuration) {
         super.postProcessConfiguration(configuration);
-
         configuration.addValueExtractor(new PatchFieldValueExtractor());
     }
 }

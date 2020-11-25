@@ -52,7 +52,7 @@ public class EmployeesEndPoint {
         return this.employeeService.getEmployee(id);
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Add employee")
     public Employee addEmployee(@RequestBody @Valid EmployeeRequest request) {
         LOGGER.info("Add employee. Request: {}", request);
@@ -60,7 +60,7 @@ public class EmployeesEndPoint {
         return this.employeeService.addEmployee(request.toEmployee());
     }
 
-    @PostMapping("{id}")
+    @PostMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Update employee")
     public Employee updateEmployee(@PathVariable("id") @Min(0) Long id, @RequestBody @Valid EmployeeRequest request) {
         LOGGER.info("Update employee. Employee id: {}. Request: {}", id, request);
@@ -68,7 +68,7 @@ public class EmployeesEndPoint {
         return this.employeeService.updateEmployee(id, request.toEmployee());
     }
 
-    @PutMapping
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Add employee or update")
     public Employee putEmployee(@RequestBody @Valid EmployeeRequest request) {
         LOGGER.info("Add or update employee. Request: {}", request);
@@ -76,7 +76,7 @@ public class EmployeesEndPoint {
         return this.employeeService.putEmployee(request.toEmployee());
     }
 
-    @PatchMapping("{id}")
+    @PatchMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Patch employee")
     public Employee patchEmployee(@PathVariable("id") @Min(0) Long id, @RequestBody @Valid PatchEmployeeRequest request) {
         LOGGER.info("Patch employee. Request: {}", request);

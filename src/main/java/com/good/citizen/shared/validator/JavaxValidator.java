@@ -2,6 +2,7 @@ package com.good.citizen.shared.validator;
 
 import com.good.citizen.shared.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.validation.Validator;
@@ -14,7 +15,7 @@ public class JavaxValidator {
     private final Validator validator;
 
     @Autowired
-    public JavaxValidator(Validator javaxValidator) {
+    public JavaxValidator(@Qualifier("customLocalValidatorFactoryBean") Validator javaxValidator) {
         this.validator = javaxValidator;
     }
 

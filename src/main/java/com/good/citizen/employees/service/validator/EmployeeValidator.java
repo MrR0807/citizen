@@ -1,4 +1,4 @@
-package com.good.citizen.employees.api.validator;
+package com.good.citizen.employees.service.validator;
 
 import com.good.citizen.employees.model.Employee;
 import com.good.citizen.exceptions.BadRequestException;

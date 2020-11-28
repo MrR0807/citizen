@@ -139,6 +139,10 @@ or ``ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(body);`` etc.
 
 Use ``@ApiOperation`` to describe an endpoint's purpose. There is no need to describe ``response`` or ``responseContainer`` as it is inferred by SpringFox automatically.
 
+---
+
+Define input models (TODO Daumantas).
+
 ----
 
 Request and Response models should be immutable objects and have (this is for easier migration to [records](https://openjdk.java.net/jeps/359)):
@@ -166,7 +170,13 @@ List<@NotNull Integer> numbers;
 
 The difference is that in first example, request can be sent with ``"numbers": [null]`` and will be a valid request.
 
----- 
+----
+
+
+https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-object-graph-validation
+
+
+----
 
 **Don't forget ``@Validated`` on ``@RestController``**. 
 
@@ -495,7 +505,11 @@ public class CustomLocalValidatorFactoryBean extends LocalValidatorFactoryBean {
         configuration.addValueExtractor(new PatchFieldValueExtractor());
     }
 }
-``` 
+```
+
+##### PATCH vs POST
+
+ 
 
 ## Error Handling
 
@@ -574,15 +588,20 @@ Spring Data:
                             WHERE e.id = :id""")
     Optional<EmployeeEntity> findById(Long id);
 ```
+or:
+```
+    @Override
+    @EntityGraph(attributePaths = {"team", "projects"})
+    Optional<EmployeeEntity> findById(Long id);
+```
+
+
 
 We need to define JPQL query, because Spring cannot join tables optimally, unless you define ``fetch = FetchType.EAGER``. With ManyToMany relationship,
-this [can lead to N+1 problem](https://vladmihalcea.com/n-plus-1-query-problem/). 
+this [can lead to N+1 problem](https://vladmihalcea.com/n-plus-1-query-problem/). Or solution relies on using ``@EntityGraph``. Then, ``fetch = FetchType.EAGER``
+is not required.  
 
-Example of dynamic queries can be found in ``EmployeeRepo`` and ``EmployeeRepoCriteria``.
-A more elaborate comparison is in ``getAllEmployees`` where filter is given as an input parameter.
-In this particular case Spring Data's ``Specification`` API is not useful when data is fetched with ``JOINS``. 
-However, I have created ``EmployeeRepoSpringData``, using ``Example`` API. Unfortunately it does not work if you want to fetch associations in your 
-query instead of allowing N+1 problem via ``FetchType.EAGER``.
+Example of dynamic queries can be found in ``EmployeeRepo``, ``EmployeeRepoCriteria`` and Spring's flavoured with ``Specification`` in ``EmployeeRepoSpringData``. 
 
 #### TODO Remove scanning of Spring Data 
 
@@ -598,8 +617,6 @@ If entity can return null value, wrap *getter* into ``Optional``.
 ---
 
 ``Entities`` should not leave Service layer. Always return a *view* of ``Entity`` instead.
-
----
 
 ---
 
@@ -818,7 +835,7 @@ No need to declare ```@Autowired``` on constructors if only one constructor exis
 
 ---
 
-Use UTF-8 when running surefire-plugin.
+Use UTF-8 when running surefire-plugin. There are test that include UTF-8 letters, thus if we would remove ``configuration`` they would fail.
 
 ```
 <!-- Some tests assert on UTF-8 letters, thus without defined encoding, tests will fail.
@@ -901,6 +918,13 @@ try (var e = Executors.newUnboundedExecutor(myThreadFactory)
    e.submit(task2);
 }
 ```
+
+
+#### Simple benchmarks
+
+JFR Show threads
+
+https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpServer.html
 
 ### Key Takeaways
 

@@ -1,4 +1,4 @@
-package com.good.citizen.employees.repo;
+package com.good.citizen.employees.springway;
 
 import com.good.citizen.employees.repo.entity.ProjectEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

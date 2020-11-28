@@ -46,6 +46,7 @@ public class EmployeeRepoCriteria {
         if (filter.getTeam().isPresent()) {
             var p = cb.parameter(String.class, "teamName");
             predicates.add(cb.equal(cb.lower(teamEntity.get("name")), p));
+//            predicates.add(cb.equal(cb.lower(employeeEntity.get("team").get("name")), p)); //Alternative to (Join<Object, Object>) casting
         }
         if (filter.getJobTitle().isPresent()) {
             var p = cb.parameter(JobTitle.class, "jobTitle");

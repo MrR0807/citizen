@@ -1,9 +1,8 @@
-package com.good.citizen.employees.api;
+package com.good.citizen.employees.springway;
 
+import com.good.citizen.employees.api.request.EmployeeFilter;
 import com.good.citizen.employees.model.Employee;
 import com.good.citizen.employees.model.Project;
-import com.good.citizen.employees.repo.EmployeeRepoSpringData;
-import com.good.citizen.employees.repo.ProjectRepoSpringData;
 import com.good.citizen.exceptions.NotFoundException;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.Min;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 //For demo purposes only.
 @RestController
@@ -29,6 +30,17 @@ public class SpringEmployeesEndPoint {
     public SpringEmployeesEndPoint(EmployeeRepoSpringData repo, ProjectRepoSpringData projectRepo) {
         this.repo = repo;
         this.projectRepo = projectRepo;
+    }
+
+    @GetMapping
+    @ApiOperation("Get information about all employees")
+    public Set<Employee> getAllEmployees(EmployeeFilter filter) {
+        LOGGER.info("Get all employees request. Employee filter {}", filter);
+
+        var employeeSpecification = EmployeeSpecification.createEmployeeSpecification(filter);
+        return this.repo.findAll(employeeSpecification).stream()
+                .map(Employee::partialFrom)
+                .collect(Collectors.toSet());
     }
 
     @GetMapping("{id}")

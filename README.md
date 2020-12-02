@@ -17,16 +17,15 @@ Package by feature not by layer.
 [Great article](https://phauer.com/2020/package-by-feature/). Below information is taken from it:
 
 * Drawbacks of **packaging classes by technical concerns**:
-  *  Poor overview of all classes that belong to a feature.
-  *  Tendency to generic, reused and complex code, which is hard to understand and changes can easily break other use cases as the impact of a change is hard to grasp. 
-  Often, this approach leads to central classes containing all methods for every use case. Over time, those methods get more and more 
-  abstracted (with extra parameters and generics) to fulfill more use cases.
+    * Poor overview of all classes that belong to a feature.
+    * Tendency to generic, reused and complex code, which is hard to understand and changes can easily break other use cases as the impact of a change is hard to grasp. Often, this approach leads to
+      central classes containing all methods for every use case. Over time, those methods get more and more abstracted (with extra parameters and generics) to fulfill more use cases.
 * Instead, package **by feature** and create packages that contain all classes that are required for a feature. The benefits are:
-  *  Better discoverability and overview
-  *  Self-contained and independent
-  *  Simpler code
-  *  Testability
-  
+    * Better discoverability and overview
+    * Self-contained and independent
+    * Simpler code
+    * Testability
+
 ![package-by-layer.PNG](pictures/package-by-layer.PNG)
 
 ![package-by-feature.PNG](pictures/package-by-feature.PNG)
@@ -36,20 +35,23 @@ Package by feature not by layer.
 **Do not use Lombok**. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
 should cover almost all cases like DTO's and Request/Response models only exception I see is with entities.
 
-```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small part of your application, and does not justify adding Lombok. 
-If you're truly bothered by getters/setters you can just make properties ``public``. 
+```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small part of your application, and does not justify adding Lombok. If you're truly bothered by
+getters/setters you can just make properties ``public``.
 
 #### Main Arguments
 
-> Spring and Hibernate generate bytecode the way the compiler is intending to support it: by generating a java source code file and then compiling it without touching the source file/class 
->the annotation came from. Lombok goes into the parse tree (via non-public APIs) and mutates the AST in place.
+> Spring and Hibernate generate bytecode the way the compiler is intending to support it: by generating a java source code file and then compiling it without touching the source file/class
+> the annotation came from. Lombok goes into the parse tree (via non-public APIs) and mutates the AST in place.
+
 - Reddit comment
 
-> <...> while we do code against internal API, they are relatively stable bits. If what lombok does could be done without resorting to internal API, we'd have done something else, 
->but it can't be done, so we resort to internal API usage.
+> <...> while we do code against internal API, they are relatively stable bits. If what lombok does could be done without resorting to internal API, we'd have done something else,
+> but it can't be done, so we resort to internal API usage.
+
 - [Lombok developers](https://stackoverflow.com/questions/6107197/how-does-lombok-work):
 
 More resources:
+
 * https://youtrack.jetbrains.com/issue/IDEA-248146
 * https://github.com/rzwitserloot/lombok/issues/1723
 * https://github.com/jhipster/generator-jhipster/issues/398
@@ -61,13 +63,14 @@ More resources:
 #### Lombok and Entity
 
 I've seen the same mistake done many times - ```@Entity``` class marked with ```@Data``` or  ```@EqualsAndHashCode``` leads to bad JPA practices:
+
 * Missing bidirectional synchronized methods.
-> Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times.
-The addPhone() and removePhone() are utility methods that synchronize both ends whenever a child element is added or removed.
+
+> Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times. The addPhone() and removePhone() are utility methods that synchronize both ends whenever a child element is added or removed.
 
 [Source - Hibernate User Guide](https://docs.jboss.org/hibernate/stable/orm/userguide/html_single/Hibernate_User_Guide.html#associations-one-to-many-bidirectional)
 
->However, we still need to have both sides in sync as otherwise, we break the Domain Model relationship consistency, and the entity state transitions are not guaranteed to work unless both sides are properly synchronized.
+> However, we still need to have both sides in sync as otherwise, we break the Domain Model relationship consistency, and the entity state transitions are not guaranteed to work unless both sides are properly synchronized.
 
 [Source - Vlad Mihalcea Blog](https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/)
 
@@ -76,6 +79,7 @@ The addPhone() and removePhone() are utility methods that synchronize both ends 
 #### Lombok and Logger
 
 Lombok solution:
+
 ```
 @Slf4j
 public class LogExample {}
@@ -88,14 +92,18 @@ public class LogExample {
 ```
 
 Just use IntelliJ live template and it will generate this for you with a small shortcut. Mine called ``lger``:
+
 ```
 private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger($CLASS$.class);
 ```
 
+#### Lombok and IntelliJ
+
+Starting from 2020.3 Lombok plugin is now built-in in IntelliJ. Don't forget to disable it, via Settings -> Plugins.
+
 ## Endpoints
 
-Controller classes are mainly for documenting endpoint, logging requests then delegating to Service Layer and returning responses. 
-They should contain as little business logic as possible.
+Controller classes are mainly for documenting endpoint, logging requests then delegating to Service Layer and returning responses. They should contain as little business logic as possible.
 
 ```
     @GetMapping("{id}")
@@ -110,6 +118,7 @@ They should contain as little business logic as possible.
 ---
 
 Don't use ``ResponseEntity`` boilerplate:
+
 ```
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
@@ -122,6 +131,7 @@ Don't use ``ResponseEntity`` boilerplate:
 ```
 
 Just return the object:
+
 ```
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
@@ -132,7 +142,7 @@ Just return the object:
     }
 ```
 
-Unless you have clear need for specific Response, like ``ResponseEntity.noContent()``, ``ResponseEntity.created(uriLocation).body(body);`` 
+Unless you have clear need for specific Response, like ``ResponseEntity.noContent()``, ``ResponseEntity.created(uriLocation).body(body);``
 or ``ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(body);`` etc.
 
 ----
@@ -146,6 +156,7 @@ Define input models (TODO Daumantas).
 ----
 
 Request and Response models should be immutable objects and have (this is for easier migration to [records](https://openjdk.java.net/jeps/359)):
+
 * ``private final`` instance variables;
 * ``all-args`` constructor with ``@JsonCreator``;
 * ``hashCode``, ``equals``, ``toString``;
@@ -178,9 +189,10 @@ https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#s
 
 ----
 
-**Don't forget ``@Validated`` on ``@RestController``**. 
+**Don't forget ``@Validated`` on ``@RestController``**.
 
 Example:
+
 ```
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
@@ -196,6 +208,7 @@ If ```@Validated``` is missing, then ```@Min``` will not be taken into account, 
 ----
 
 If you want to have filters for endpoints, like so:
+
 ```
     @GetMapping
     @ApiOperation("Get information about all employees")
@@ -220,11 +233,11 @@ GET, HEAD, OPTIONS, and TRACE methods are defined to be safe. Request methods ar
 
 PUT, DELETE, and safe request methods are idempotent.
 
-Idempotent - operation can be repeated and the outcome will be the same (the server's state will remain the same). For example, PUT employee will either create or update existing. Doesn't matter,
-how many times you will repeat the same operation it will always return same response.
+Idempotent - operation can be repeated and the outcome will be the same (the server's state will remain the same). For example, PUT employee will either create or update existing. Doesn't matter, how
+many times you will repeat the same operation it will always return same response.
 
-The problem with DELETE, which if successful would normally return a 200 (OK) or 204 (No Content), will often return a 404 (Not Found) on subsequent calls. However, the state on the server 
-is the same after each DELETE call, but the response is different.
+The problem with DELETE, which if successful would normally return a 200 (OK) or 204 (No Content), will often return a 404 (Not Found) on subsequent calls. However, the state on the server is the same
+after each DELETE call, but the response is different.
 
 ---
 
@@ -237,6 +250,7 @@ is the same after each DELETE call, but the response is different.
 If ``GET`` list does not contain resources (with/without filters) return an empty list or throw exception. **I prefer returning an empty list**.
 
 Example of ``GET`` list:
+
 ```
     @GetMapping
     @ApiOperation("Get information about all employees")
@@ -277,6 +291,7 @@ public class EmployeeFilter {
 ```
 
 Example of ``GET`` resource:
+
 ```
     @GetMapping("{id}")
     @ApiOperation("Get information about one employees")
@@ -296,13 +311,15 @@ Example of ``GET`` resource:
 If employee exists, throw exception - ``Bad Request (400)``.
 
 Questions:
+
 * How will respond look:
-  * Return only OK;
-  * Return OK and created resource's id;
-  * Return OK and entire created resource (in some case this might be too costly).
+    * Return only OK;
+    * Return OK and created resource's id;
+    * Return OK and entire created resource (in some case this might be too costly).
 * What unique properties define resource?
 
 Example:
+
 ```
     @PostMapping
     @ApiOperation("Add employee")
@@ -324,20 +341,22 @@ public record EmployeeRequest(
 
 #### PUT
 
-> The PUT method requests that the state of the target resource be **created or replaced** with the state defined by the representation enclosed 
->in the request message payload.
+> The PUT method requests that the state of the target resource be **created or replaced** with the state defined by the representation enclosed
+> in the request message payload.
 
 ``PUT`` is idempotent.
 
 Questions:
+
 * What unique properties define resource?
 * Will you respond differently when resource was created/updated?
 
-> If the target resource does not have a current representation and the PUT successfully creates one, then the origin server MUST inform the user agent by sending a 201 (Created) response.  If the target
->resource does have a current representation and that representation is successfully modified in accordance with the state of the enclosed representation, then the origin server MUST send either a 200 (OK) or
->a 204 (No Content) response to indicate successful completion of the request.
+> If the target resource does not have a current representation and the PUT successfully creates one, then the origin server MUST inform the user agent by sending a 201 (Created) response. If the target
+> resource does have a current representation and that representation is successfully modified in accordance with the state of the enclosed representation, then the origin server MUST send either a 200 (OK) or
+> a 204 (No Content) response to indicate successful completion of the request.
 
 Example:
+
 ```
     @PutMapping
     @ApiOperation("Add employee or update")
@@ -351,12 +370,14 @@ Example:
 ### PATCH
 
 There are two standards for PATCH'ing:
+
 * [JSON Patch](https://tools.ietf.org/html/rfc6902)
 * [JSON Merge Patch](https://tools.ietf.org/html/rfc7386)
 
 #### JSON Patch
 
 > The following is an example JSON Patch document:
+
 ```
 HTTP PATCH request:
 
@@ -381,6 +402,7 @@ Not going into much detail, this kind of PATCH'ing is not intuitive and complica
 #### JSON Merge Patch
 
 For example, given the following original JSON document:
+
 ```
 {
   "a": "b",
@@ -408,11 +430,11 @@ Content-Type: application/merge-patch+json
 
 When applied to the target resource, the value of the "a" member is replaced with "z" and "f" is removed, leaving the remaining content untouched.
 
-To acheive this in Java, I had to create a wrapper class ```PatchField<T>```. It solves Java's objects problem, where each object/property, if not initialized, 
-will have default value (``null`` for reference types, ``false`` for primitive boolean and ``0`` for primitive numbers). 
-However, how can we know when ``null`` was set by consumer and when it was set during object creation.  
+To acheive this in Java, I had to create a wrapper class ```PatchField<T>```. It solves Java's objects problem, where each object/property, if not initialized, will have default value (``null`` for
+reference types, ``false`` for primitive boolean and ``0`` for primitive numbers). However, how can we know when ``null`` was set by consumer and when it was set during object creation.
 
 Say, we have:
+
 ```
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public record EmployeeRequest(
@@ -425,6 +447,7 @@ public record EmployeeRequest(
 ```
 
 If I want to *nullify* only ``name`` and leave the rest of Employee properties unchanged I would pass:
+
 ```
 {
   "name": null
@@ -434,6 +457,7 @@ If I want to *nullify* only ``name`` and leave the rest of Employee properties u
 However, all objects would be initialized as nulls in this case, and it would *nullify* everything.
 
 Enter ```PatchField<T>```:
+
 ```
 public record PatchField<T>(boolean isSet, T value) {
 
@@ -454,6 +478,7 @@ public record PatchField<T>(boolean isSet, T value) {
 ``` 
 
 And ``PatchEmployeeRequest`` looks like so:
+
 ```
 public class PatchEmployeeRequest {
 
@@ -476,14 +501,13 @@ public class PatchEmployeeRequest {
 }
 ```
 
-We require to have ``Getters`` and ``Setters``, because Jackson invokes setters only on those methods which were in the request body. In this example's case - 
-only ``name``. We also require to initialize each property with ``PatchField.empty();`` to differentiate when PatchField instance set by deserializing framework and 
-when by us.
+We require to have ``Getters`` and ``Setters``, because Jackson invokes setters only on those methods which were in the request body. In this example's case - only ``name``. We also require to
+initialize each property with ``PatchField.empty();`` to differentiate when PatchField instance set by deserializing framework and when by us.
 
-Lastly, if you want to add jakarta validation annotations on Type parameters, like ``PatchField<@Min(0) Long> socialSecurityNumber``, you have to 
-create custom ``Extractor`` and register with Spring.
+Lastly, if you want to add jakarta validation annotations on Type parameters, like ``PatchField<@Min(0) Long> socialSecurityNumber``, you have to create custom ``Extractor`` and register with Spring.
 
 Extractor as [per documentation](https://docs.jboss.org/hibernate/validator/6.0/reference/en-US/html_single/#_implementing_a_code_valueextractor_code):
+
 ```
 public class PatchFieldValueExtractor implements ValueExtractor<PatchField<@ExtractedValue ?>> {
 
@@ -495,6 +519,7 @@ public class PatchFieldValueExtractor implements ValueExtractor<PatchField<@Extr
 ```
 
 Register with Spring:
+
 ```
 @Component
 public class CustomLocalValidatorFactoryBean extends LocalValidatorFactoryBean {
@@ -509,20 +534,18 @@ public class CustomLocalValidatorFactoryBean extends LocalValidatorFactoryBean {
 
 ##### PATCH vs POST
 
- 
-
 ## Error Handling
 
-Errors within your application should be protocol-independent. For example, if an Employee does not exist, application throws ``NotFoundException``.
-Then depending on the protocol, may it be AMQP or HTTP, error should translate accordingly. For HTTP there are Spring's ``@RestControllerAdvice``.
-I've provided a list of exception handlers which are utilized in my other applications. Find them under ``exceptionhandlers`` package.
+Errors within your application should be protocol-independent. For example, if an Employee does not exist, application throws ``NotFoundException``. Then depending on the protocol, may it be AMQP or
+HTTP, error should translate accordingly. For HTTP there are Spring's ``@RestControllerAdvice``. I've provided a list of exception handlers which are utilized in my other applications. Find them
+under ``exceptionhandlers`` package.
 
 ## Repository
 
 #### Use ``getResultList()`` vs ``getSingleResult()``
 
-``getSingleResult()`` throws ``NoResultException`` which is ``RuntimeException`` - if there is no result, thus you would have to wrap it into ``try/catch``.
-I advise utilizing ``getResultList()`` like so:
+``getSingleResult()`` throws ``NoResultException`` which is ``RuntimeException`` - if there is no result, thus you would have to wrap it into ``try/catch``. I advise utilizing ``getResultList()`` like
+so:
 
 ```
 public Optional<EmployeeEntity> getEmployee(Long id) {
@@ -543,6 +566,7 @@ public Optional<EmployeeEntity> getEmployee(Long id) {
 #### Prefer JPQL versus Criteria builder.
 
 JPQL:
+
 ```
     public Optional<EmployeeEntity> getEmployee(Long id) {
         var employees = this.em.createQuery("""
@@ -557,9 +581,10 @@ JPQL:
     }
 ```
 
-VS 
+VS
 
 CriteriaBuilder:
+
 ```
     public Optional<EmployeeEntity> getEmployee(Long id) {
         var cb = this.em.getCriteriaBuilder();
@@ -579,6 +604,7 @@ CriteriaBuilder:
 VS
 
 Spring Data:
+
 ```
     @Override
     @Query("""
@@ -588,27 +614,27 @@ Spring Data:
                             WHERE e.id = :id""")
     Optional<EmployeeEntity> findById(Long id);
 ```
+
 or:
+
 ```
     @Override
     @EntityGraph(attributePaths = {"team", "projects"})
     Optional<EmployeeEntity> findById(Long id);
 ```
 
-
-
 We need to define JPQL query, because Spring cannot join tables optimally, unless you define ``fetch = FetchType.EAGER``. With ManyToMany relationship,
 this [can lead to N+1 problem](https://vladmihalcea.com/n-plus-1-query-problem/). Or solution relies on using ``@EntityGraph``. Then, ``fetch = FetchType.EAGER``
-is not required.  
+is not required.
 
-Example of dynamic queries can be found in ``EmployeeRepo``, ``EmployeeRepoCriteria`` and Spring's flavoured with ``Specification`` in ``EmployeeRepoSpringData``. 
+Example of dynamic queries can be found in ``EmployeeRepo``, ``EmployeeRepoCriteria`` and Spring's flavoured with ``Specification`` in ``EmployeeRepoSpringData``.
 
-#### TODO Remove scanning of Spring Data 
+#### TODO Remove scanning of Spring Data
 
 ### Entities
 
-``equals`` and ``hashCode`` is implemented according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* page 192
-or in this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
+``equals`` and ``hashCode`` is implemented according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* page 192 or in
+this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
 
 ---
 
@@ -628,9 +654,7 @@ Use ``LocalDateTime`` and friends from ``java.time`` for representation of date 
 
 ![jpa-relationships.png](pictures/jpa-relationships.png)
 
-
 [Source](https://vladmihalcea.com/14-high-performance-java-persistence-tips/)
-
 
 For collections use Sets (``@ElementCollection`` including) and always implement ``equals`` and ``hashCode`` according Vlad Mihalcea.
 
@@ -638,24 +662,23 @@ For collections use Sets (``@ElementCollection`` including) and always implement
 
 #### Bidirectional synchronized methods.
 
-Even though it is adviced to use synchronized method, it's unclear why. Outstanding stackoverflow [question](https://stackoverflow.com/questions/64487322/why-do-we-need-bidirectional-synchronized-methods). 
+Even though it is adviced to use synchronized method, it's unclear why. Outstanding
+stackoverflow [question](https://stackoverflow.com/questions/64487322/why-do-we-need-bidirectional-synchronized-methods).
 
-> Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times.
-The addPhone() and removePhone() are utility methods that synchronize both ends whenever a child element is added or removed:
+> Whenever a bidirectional association is formed, the application developer must make sure both sides are in-sync at all times. The addPhone() and removePhone() are utility methods that synchronize both ends whenever a child element is added or removed:
 
 [Source - Hibernate User Guide](https://docs.jboss.org/hibernate/stable/orm/userguide/html_single/Hibernate_User_Guide.html#associations-one-to-many-bidirectional)
 
->However, we still need to have both sides in sync as otherwise, we break the Domain Model relationship consistency, and the entity state transitions are not guaranteed to work unless both sides are properly synchronized.
+> However, we still need to have both sides in sync as otherwise, we break the Domain Model relationship consistency, and the entity state transitions are not guaranteed to work unless both sides are properly synchronized.
 
 [Source - Vlad Mihalcea Blog](https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/)
 
 ## Optional and nullability
 
-Avoid nulls at all cost! Developer has to trust code otherwise you will find this pattern sprinkled ```Objects.requireNonNull``` or 
-worse ```if (object != null) {}``` everywhere.
-Defend at the perimeter! (Timestamped link, watch time ~5 min): [Clean Code: The Next Chapter by Victor Rentea](https://youtu.be/wY_CUkU1zfw?t=2800)  
-All data which is incoming into the system from outside (REST request, RabbitMQ messages, Database entities etc.) has to follow 
-these rules regarding nullability:
+Avoid nulls at all cost! Developer has to trust code otherwise you will find this pattern sprinkled ```Objects.requireNonNull``` or worse ```if (object != null) {}``` everywhere. Defend at the
+perimeter! (Timestamped link, watch time ~5 min): [Clean Code: The Next Chapter by Victor Rentea](https://youtu.be/wY_CUkU1zfw?t=2800)  
+All data which is incoming into the system from outside (REST request, RabbitMQ messages, Database entities etc.) has to follow these rules regarding nullability:
+
 * If property can be null, you should use **Optional as a return parameter**.
 
 ```
@@ -672,7 +695,9 @@ public class ExampleRequest {
     }
 }
 ```
+
 * If property can have default value, define it in the constructor. Another reason to use immutable types. They guarantee correct values.
+
 ```
     @JsonCreator
     public EmployeeRequest(String name, String lastName, String team, JobTitle jobTitle) {
@@ -682,31 +707,36 @@ public class ExampleRequest {
         this.jobTitle = jobTitle;
     }
 ```
+
 Here, for example, team can be null. However, if we can define a default value for that property, we should do it using ```requireNonNullElse``` or ```requireNonNullElseGet```.
 
 ### When to use Optional according to Bryan Goetz
 
 [Stackoverflow answer](https://stackoverflow.com/a/26328555/5486740):
 
-> For example, you probably should never use it for something that returns an array of results, or a list of results; instead return an empty array or list. 
+> For example, you probably should never use it for something that returns an array of results, or a list of results; instead return an empty array or list.
 > You should almost never use it as a field of something or a method parameter.
 > I think routinely using it as a return value for getters would definitely be over-use. (!)
 
-> (Public service announcement: NEVER call ``Optional.get`` unless you can prove it will never be null; instead use one of the safe methods like ``orElse`` or ``ifPresent``. 
-> In retrospect, we should have called get something like ``getOrElseThrowNoSuchElementException`` or something that made it far clearer that this was a 
-> highly dangerous method that undermined the whole purpose of ``Optional`` in the first place. Lesson learned. 
+> (Public service announcement: NEVER call ``Optional.get`` unless you can prove it will never be null; instead use one of the safe methods like ``orElse`` or ``ifPresent``.
+> In retrospect, we should have called get something like ``getOrElseThrowNoSuchElementException`` or something that made it far clearer that this was a
+> highly dangerous method that undermined the whole purpose of ``Optional`` in the first place. Lesson learned.
 > (UPDATE: Java 10 has ``Optional.orElseThrow()``, which is semantically equivalent to ``get()``, but whose name is more appropriate.))
 
 ### Records and nullability
+
 [Intial question on OpenJDK mailing list](https://mail.openjdk.java.net/pipermail/amber-dev/2020-March/005670.html)
 
 Suggestions from [mailing list](https://mail.openjdk.java.net/pipermail/amber-dev/2020-March/005671.html).
 
 Either you declare the component optional:
+
 ```
 record Person(Optional<String> name) { }
 ```
+
 or don't declare the component ``Optional`` but burn the accessor:
+
 ```
 record Person(String name /*may be null*/) {
     public String name() {
@@ -719,6 +749,7 @@ record Person(String name /*may be null*/) {
 ```
 
 However, there was another suggestion, which **I like the most** (I cannot find the source):
+
 ```
 public record Person(Optional<String> name) {
 
@@ -733,8 +764,8 @@ public record Person(Optional<String> name) {
 
 ### Naming
 
-Follow test method naming conventions ``methodUnderTest__[given/when]__[then]`` where ``given/when`` and ``then`` is optional. 
-Example: 
+Follow test method naming conventions ``methodUnderTest__[given/when]__[then]`` where ``given/when`` and ``then`` is optional. Example:
+
 * ``getAllEmployees__thenReturnListOfEmployees``
 * ``getAllEmployees__whenNoEmployeesExist__thenReturnEmptyList``
 * ``getEmployee__whenInvalidEmployeeId__thenReturn400``
@@ -742,17 +773,20 @@ Example:
 
 ### Integration Tests
 
-Reuse Spring's Application Context as much as possible. This will speed up your tests, because it doesn't need to restart, 
-thus in perfect conditions, you'd only need to start Spring's Application once. To achieve this:
-* Create a single annotation (see @IntegrationTest in test folder); 
+Reuse Spring's Application Context as much as possible. This will speed up your tests, because it doesn't need to restart, thus in perfect conditions, you'd only need to start Spring's Application
+once. To achieve this:
+
+* Create a single annotation (see @IntegrationTest in test folder);
 * Class which each integration test extends.
 
 ---
+
 #### Testing time
 
 TimeMachine class.
 
 ---
+
 #### Avoid ``@MockBeans``
 
 It will restart Spring's application.
@@ -768,9 +802,11 @@ It will restart Spring's application.
 #### End-to-End Testing
 
 ### Misc
+
 ```
 assertThat(responseFrame).hasNoNullFieldsOrProperties();
 ```
+
 If property wrapped into ``Optional``, it is not null, hence the assertion will pass.
 
 ### Resources
@@ -782,14 +818,16 @@ https://phauer.com/2019/modern-best-practices-testing-java/
 ## Spring
 
 Favor construction injections vs setter/property injections. From Spring documentation:
-> The Spring team generally advocates constructor injection, as it lets you implement application components as immutable objects and ensures 
->that required dependencies are not null. Furthermore, constructor-injected components are always returned to the client (calling) code in a fully initialized state.
+> The Spring team generally advocates constructor injection, as it lets you implement application components as immutable objects and ensures
+> that required dependencies are not null. Furthermore, constructor-injected components are always returned to the client (calling) code in a fully initialized state.
 
 ----
 
-If you have multiple properties, prefer to use [Type-safe Configuration Properties](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-typesafe-configuration-properties).
+If you have multiple properties, prefer to
+use [Type-safe Configuration Properties](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-typesafe-configuration-properties).
 
-Below example, in the future, will most likely work with ``records``. 
+Below example, in the future, will most likely work with ``records``.
+
 ```
 @ConstructorBinding
 @ConfigurationProperties("acme")
@@ -818,6 +856,7 @@ No need to declare ```@Autowired``` on constructors if only one constructor exis
 1. Try to have as little external dependencies as possible. Every dependency might block you in the future from migrating to newer Java version.
 2. Don't over-engineer plugins.
 3. At least in my experience it's best to have maven-compiler-plugin declared with Java versions, otherwise IntelliJ sets wrong Java for the project:
+
 ```
 <!--plugin for intellij to get settings-->
 <plugin>
@@ -865,6 +904,7 @@ http://andresalmiray.com/detecting-duplicate-dependencies-in-maven/
 ## No Async/await frameworks
 
 > The performance we expect is similar to reactive frameworks. There is some added overhead, but I think it will be negligible in 99.9% of real-world use-cases.
+
 - Ron Pressler (Project Loom Lead)
 
 ```
@@ -877,7 +917,7 @@ Thread.startVirtualThread(() -> {
 
 | Platform Thread  | Virtual Thread |
 | ------------- | ------------- |
-| >2KB metadata  | 200-300B metadata  |
+| > 2KB metadata  | 200-300B metadata  |
 | 1MB Stack  | Pay-as-you-go stack  |
 
 #### Context switching
@@ -890,13 +930,12 @@ Thread.startVirtualThread(() -> {
 
 #### Migration
 
-> If you have a common I/O operation guarded by a synchronized, replace the monitor with a ReentrantLock to let your application benefit fully from Loom’s scalability boost even before we fix 
->pinning by monitors (or, better yet, use the higher-performance StampedLock if you can). Currently, they are working on making JDK libraries Loom-friendly.
+> If you have a common I/O operation guarded by a synchronized, replace the monitor with a ReentrantLock to let your application benefit fully from Loom’s scalability boost even before we fix
+> pinning by monitors (or, better yet, use the higher-performance StampedLock if you can). Currently, they are working on making JDK libraries Loom-friendly.
 
 ### Structured concurrency
 
-Structured concurrency corrals thread lifetimes into code blocks. Its basic principle is this: threads that are created in some code unit must all terminate by the time we 
-exit that code unit:
+Structured concurrency corrals thread lifetimes into code blocks. Its basic principle is this: threads that are created in some code unit must all terminate by the time we exit that code unit:
 
 ```
 ThreadFactory vtf = Thread.builder().virtual().factory();
@@ -906,8 +945,7 @@ try (ExecutorService e = Executors.newUnboundedExecutor(vtf)) {
 } // blocks and waits
 ```
 
-Before we exit the TWR block, the current thread will block, waiting for all tasks — and their threads — to finish. Once outside it, we are guaranteed that the 
-tasks have terminated.
+Before we exit the TWR block, the current thread will block, waiting for all tasks — and their threads — to finish. Once outside it, we are guaranteed that the tasks have terminated.
 
 #### Structured Interruption
 
@@ -918,7 +956,6 @@ try (var e = Executors.newUnboundedExecutor(myThreadFactory)
    e.submit(task2);
 }
 ```
-
 
 #### Simple benchmarks
 
@@ -936,15 +973,17 @@ https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/ht
 * Pluggable schedulers offer the flexibility of asynchronous programming.
 
 Resources:
+
 * [State of Loom](https://cr.openjdk.java.net/~rpressler/loom/loom/sol1_part1.html)
 * [Taking Project Loom for a spin](https://renato.athaydes.com/posts/taking-loom-for-a-spin.html)
 * [Github Loom benchmarks](https://github.com/tipsy/loomylin)
 * [Project Loom - Modern Scalable Concurrency for the Java Platform](https://inside.java/2020/09/17/project-loom/)
-* [On the Performance of User-Mode Threads and Coroutines](https://inside.java/2020/08/07/loom-performance/) 
+* [On the Performance of User-Mode Threads and Coroutines](https://inside.java/2020/08/07/loom-performance/)
 
 ## Application.yaml
 
 Full ``application.yml``:
+
 ```
 spring:
   main:
@@ -1016,6 +1055,7 @@ Examine each step by step.
 ---
 
 ### Flyway configuration
+
 ```
   flyway:
     enabled: true
@@ -1028,6 +1068,7 @@ Examine each step by step.
 ---
 
 ### Datasource
+
 ```
   datasource:
     driver-class-name: org.h2.Driver
@@ -1040,6 +1081,7 @@ Examine each step by step.
 ---
 
 ### JPA
+
 ```
   jpa:
     database: h2
@@ -1093,7 +1135,7 @@ For datetime use ```datetime2```. Mainly this [stackoverflow question has all th
 > - better Accuracy
 > - smaller storage space (if optional user-specified precision is specified)
 
-For binary data (e.g. ``byte[]``) save into ``VARBINARY(MAX)``: 
+For binary data (e.g. ``byte[]``) save into ``VARBINARY(MAX)``:
 > if your pictures or document are typically below 256KB in size, storing them in a database VARBINARY column is more efficient.
 
 [Stackoverflow question and answer](https://stackoverflow.com/questions/5613898/storing-images-in-sql-server)
@@ -1102,27 +1144,27 @@ For binary data (e.g. ``byte[]``) save into ``VARBINARY(MAX)``:
 
 ## Git
 
-What happens when tag is equal to branch name? It will checkout to tag, instead of branch. That means, that new code has been commited to branch and CI tool
-would like to checkout to the head of named branch (using branch name), it will checkout to tag, and you won't have your changes deployed.
+What happens when tag is equal to branch name? It will checkout to tag, instead of branch. That means, that new code has been commited to branch and CI tool would like to checkout to the head of named
+branch (using branch name), it will checkout to tag, and you won't have your changes deployed.
 
 ## Kotlin
 
 ### Kotlin and future compatibility
 
-> As far as the Java platform (AKA "the JVM") goes, Kotlin is painting itself into a corner. Kotlin was designed in 2009-10, in the Java 7 days, around the time of the Oracle acquisition, 
->and at a time of stagnation for Java due to Sun's decline. At the time, Android was also quite similar to Java. Kotlin was a great design in those conditions. Things are very different today.
+> As far as the Java platform (AKA "the JVM") goes, Kotlin is painting itself into a corner. Kotlin was designed in 2009-10, in the Java 7 days, around the time of the Oracle acquisition,
+> and at a time of stagnation for Java due to Sun's decline. At the time, Android was also quite similar to Java. Kotlin was a great design in those conditions. Things are very different today.
 
-> Kotlin's design goals are now contradictory. It seeks to be a low-overhead language, i.e. provide abstractions that don't add overhead over the target platform, give access to all platform capabilities, 
->and at the same time target multiple platforms -- Java, Android, LLVM and JS -- over none of which does Kotlin exert much influence (maybe a bit on Android). Since 2010, Java has moved away from Android, 
->to the point that there are very big gaps between the two, and they're only growing.
+> Kotlin's design goals are now contradictory. It seeks to be a low-overhead language, i.e. provide abstractions that don't add overhead over the target platform, give access to all platform capabilities,
+> and at the same time target multiple platforms -- Java, Android, LLVM and JS -- over none of which does Kotlin exert much influence (maybe a bit on Android). Since 2010, Java has moved away from Android,
+> to the point that there are very big gaps between the two, and they're only growing.
 
-> By both trying to target multiple platforms (with no say in their design) and trying to add little or no overhead, Kotlin will soon find itself in a bind. It's coroutines are in conflict with 
->Java's upcoming virtual thread's design, and its inline classes will cause problems with Java's Valhalla vs. Android. Kotlin will have to choose to either give up on low-overhead abstractions, 
->give up on some of its platforms, give up on giving access to full platform capabilities, or split into multiple languages, each targeting a different platform. For example, 
->if Kotlin's inline types will make use of Valhalla, then they won't work on Android, at least not without much overhead.
+> By both trying to target multiple platforms (with no say in their design) and trying to add little or no overhead, Kotlin will soon find itself in a bind. It's coroutines are in conflict with
+> Java's upcoming virtual thread's design, and its inline classes will cause problems with Java's Valhalla vs. Android. Kotlin will have to choose to either give up on low-overhead abstractions,
+> give up on some of its platforms, give up on giving access to full platform capabilities, or split into multiple languages, each targeting a different platform. For example,
+> if Kotlin's inline types will make use of Valhalla, then they won't work on Android, at least not without much overhead.
 
-> TL;DR: A full-capability, low-overhead, multi-platform language is hard to pull off in the long run when you have low market share on all of those platforms (except Android) and little or no 
->influence on any of them. This was viable under some accidental circumstances, but those are no longer holding.
+> TL;DR: A full-capability, low-overhead, multi-platform language is hard to pull off in the long run when you have low market share on all of those platforms (except Android) and little or no
+> influence on any of them. This was viable under some accidental circumstances, but those are no longer holding.
 
 ### Kotlin's other known issues
 

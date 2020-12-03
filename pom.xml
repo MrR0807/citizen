@@ -20,6 +20,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring.wiremock.version>2.2.5.RELEASE</spring.wiremock.version>
         <springfox.swagger>2.9.2</springfox.swagger>
+        <pact.version>4.1.8</pact.version>
     </properties>
 
     <dependencyManagement>
@@ -100,6 +101,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <!-- Clashes with dependencies in Pact, chose to remove this one, as it's related with android? -->
+                    <groupId>com.vaadin.external.google</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 
@@ -141,6 +149,28 @@
         <!--            <artifactId>record-builder-core</artifactId>-->
         <!--            <version>1.11.ea</version>-->
         <!--        </dependency>-->
+
+
+        <!-- Pact dependencies -->
+
+        <dependency>
+            <groupId>au.com.dius.pact.consumer</groupId>
+            <artifactId>junit5</artifactId>
+            <version>${pact.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>au.com.dius.pact.consumer</groupId>
+            <artifactId>java8</artifactId>
+            <version>${pact.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>au.com.dius.pact.provider</groupId>
+            <artifactId>junit5</artifactId>
+            <version>${pact.version}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 

@@ -1,6 +1,7 @@
 package com.good.citizen.employees.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.good.citizen.employees.repo.entity.EmployeeEntity;
 import com.good.citizen.employees.shared.JobTitle;
 
@@ -20,6 +21,10 @@ public record Employee(
         @NotNull JobTitle jobTitle,
         @NotNull @Valid Team team,
         @NotNull Set<@NotNull @Valid Project> projects) {
+
+    @JsonCreator
+    public Employee {
+    }
 
     public static Employee partialFrom(EmployeeEntity entity) {
         return new Employee(entity.getId(), entity.getSocialSecurityNumber(), entity.getFirstName(), entity.getLastName(),

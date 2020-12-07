@@ -979,6 +979,7 @@ Resources:
 * [Github Loom benchmarks](https://github.com/tipsy/loomylin)
 * [Project Loom - Modern Scalable Concurrency for the Java Platform](https://inside.java/2020/09/17/project-loom/)
 * [On the Performance of User-Mode Threads and Coroutines](https://inside.java/2020/08/07/loom-performance/)
+* [Project Loom And Structured Concurrency](https://www.javaadvent.com/2020/12/project-loom-and-structured-concurrency.html)
 
 ## Application.yaml
 

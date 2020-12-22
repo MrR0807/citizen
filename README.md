@@ -1,3 +1,5 @@
+# Table of content
+
 ## Goal
 
 This is an example of how good (in my opinion) application should look like.

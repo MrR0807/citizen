@@ -1,81 +1,79 @@
 # Table of Content
 
-- [Table of content](#table-of-content)
-    * [Goal](#goal)
-    * [How to launch (TODO)](#how-to-launch-todo)
-    * [Project Structure](#project-structure)
-    * [Lombok](#lombok)
-        - [Main Arguments](#main-arguments)
-        - [Lombok and Entity](#lombok-and-entity)
-        - [Lombok and Logger](#lombok-and-logger)
-        - [Lombok and IntelliJ](#lombok-and-intellij)
-    * [Endpoints](#endpoints)
-        + [HTTP Methods](#http-methods)
-            - [Idempotent Methods](#idempotent-methods)
-            - [GET](#get)
-            - [POST](#post)
-            - [PUT](#put)
+- [Table of Content](#table-of-content)
+- [Goal](#goal)
+- [How to launch (TODO)](#how-to-launch-todo)
+- [Project Structure](#project-structure)
+- [Lombok](#lombok)
+    * [Main Arguments](#main-arguments)
+    * [Lombok and Entity](#lombok-and-entity)
+    * [Lombok and Logger](#lombok-and-logger)
+    * [Lombok and IntelliJ](#lombok-and-intellij)
+- [Endpoints](#endpoints)
+    * [HTTP Methods](#http-methods)
+        + [Idempotent Methods](#idempotent-methods)
+        + [GET](#get)
+        + [POST](#post)
+        + [PUT](#put)
         + [PATCH](#patch)
             - [JSON Patch](#json-patch)
             - [JSON Merge Patch](#json-merge-patch)
-            - [PATCH vs POST](#patch-vs-post)
-    * [Error Handling](#error-handling)
-    * [Repository](#repository)
-        - [Use ``getResultList()`` vs ``getSingleResult()``](#use-getresultlist-vs-getsingleresult)
-        - [Prefer JPQL versus Criteria builder.](#prefer-jpql-versus-criteria-builder)
-        - [TODO Remove scanning of Spring Data](#todo-remove-scanning-of-spring-data)
-
-        + [Entities](#entities)
-            - [Performant relationships](#performant-relationships)
-            - [Bidirectional synchronized methods.](#bidirectional-synchronized-methods)
-    * [Optional and nullability](#optional-and-nullability)
-        + [When to use Optional according to Bryan Goetz](#when-to-use-optional-according-to-bryan-goetz)
-        + [Records and nullability](#records-and-nullability)
-    * [Tests](#tests)
-        + [Naming](#naming)
-        + [Integration Tests](#integration-tests)
-            - [Testing time](#testing-time)
-            - [Avoid ``@MockBeans``](#avoid-mockbeans)
-        + [Testing communication with other services](#testing-communication-with-other-services)
-            - [Wiremock](#wiremock)
-            - [Contract Based Testing](#contract-based-testing)
-            - [End-to-End Testing](#end-to-end-testing)
-        + [Misc](#misc)
-        + [Resources](#resources)
-    * [Spring](#spring)
-    * [Maven](#maven)
-    * [HTTP Client](#http-client)
-    * [No Async/await frameworks](#no-asyncawait-frameworks)
-        - [Thread "cost"](#thread-cost)
-        - [Context switching](#context-switching)
-        - [Migration](#migration)
-
-        + [Structured concurrency](#structured-concurrency)
-            - [Structured Interruption](#structured-interruption)
-            - [Simple benchmarks](#simple-benchmarks)
-        + [Key Takeaways](#key-takeaways)
-    * [Application.yaml](#applicationyaml)
-        + [Flyway configuration](#flyway-configuration)
-        + [Datasource](#datasource)
-        + [JPA](#jpa)
-        + [Management endpoints](#management-endpoints)
-    * [Kubernetes pod template](#kubernetes-pod-template)
-    * [Database](#database)
-        + [Database migration](#database-migration)
-        + [Database types](#database-types)
-            - [SQL Server](#sql-server)
-        + [Use DateTime instead of V1, V2 etc](#use-datetime-instead-of-v1-v2-etc)
-    * [Git](#git)
-    * [Kotlin](#kotlin)
-        + [Kotlin and future compatibility](#kotlin-and-future-compatibility)
-        + [Kotlin's other known issues](#kotlins-other-known-issues)
+        + [PATCH vs POST](#patch-vs-post)
+- [Error Handling](#error-handling)
+- [Repository](#repository)
+    * [Use ``getResultList()`` vs ``getSingleResult()``](#use-getresultlist-vs-getsingleresult)
+    * [Prefer JPQL versus Criteria builder.](#prefer-jpql-versus-criteria-builder)
+    * [TODO Remove scanning of Spring Data](#todo-remove-scanning-of-spring-data)
+    * [Entities](#entities)
+        + [Performant relationships](#performant-relationships)
+        + [Bidirectional synchronized methods.](#bidirectional-synchronized-methods)
+- [Optional and nullability](#optional-and-nullability)
+    * [When to use Optional according to Bryan Goetz](#when-to-use-optional-according-to-bryan-goetz)
+    * [Records and nullability](#records-and-nullability)
+- [Tests](#tests)
+    * [Naming](#naming)
+    * [Integration Tests](#integration-tests)
+    * [Testing time](#testing-time)
+    * [Avoid ``@MockBeans``](#avoid-mockbeans)
+    * [Testing communication with other services](#testing-communication-with-other-services)
+        + [Wiremock](#wiremock)
+        + [Contract Based Testing](#contract-based-testing)
+        + [End-to-End Testing](#end-to-end-testing)
+    * [Misc](#misc)
+    * [Resources](#resources)
+- [Spring](#spring)
+- [Maven](#maven)
+- [HTTP Client](#http-client)
+- [No Async/await frameworks](#no-asyncawait-frameworks)
+    * [Thread "cost"](#thread-cost)
+    * [Context switching](#context-switching)
+    * [Migration](#migration)
+    * [Structured concurrency](#structured-concurrency)
+        + [Structured Interruption](#structured-interruption)
+    * [Simple benchmarks](#simple-benchmarks)
+    * [Key Takeaways](#key-takeaways)
+- [Application.yaml](#applicationyaml)
+    * [Flyway configuration](#flyway-configuration)
+    * [Datasource](#datasource)
+    * [JPA](#jpa)
+    * [Management endpoints](#management-endpoints)
+- [Kubernetes pod template](#kubernetes-pod-template)
+- [Database](#database)
+    * [Database migration](#database-migration)
+    * [Database types](#database-types)
+    * [SQL Server](#sql-server)
+    * [Use DateTime instead of V1, V2 etc](#use-datetime-instead-of-v1-v2-etc)
+- [Git](#git)
+- [Kotlin](#kotlin)
+    * [Kotlin and future compatibility](#kotlin-and-future-compatibility)
+    * [Kotlin's other known issues](#kotlins-other-known-issues)
 - [TODO](#todo)
 
-## Goal
+# Goal
 
 This is an example of how good (in my opinion) application should look like.
 
-## How to launch (TODO)
+# How to launch (TODO)
 
 Either using docker compose, docker or kubernetes.
 
@@ -83,7 +81,7 @@ Either using docker compose, docker or kubernetes.
 mvn clean install
 ```
 
-## Project Structure
+# Project Structure
 
 Package by feature not by layer.
 
@@ -103,7 +101,7 @@ Package by feature not by layer.
 
 ![package-by-feature.PNG](pictures/package-by-feature.PNG)
 
-## Lombok
+# Lombok
 
 **Do not use Lombok**. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
 should cover almost all cases like DTO's and Request/Response models only exception I see is with entities.
@@ -111,7 +109,7 @@ should cover almost all cases like DTO's and Request/Response models only except
 ```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small part of your application, and does not justify adding Lombok. If you're truly bothered by
 getters/setters you can just make properties ``public``.
 
-#### Main Arguments
+## Main Arguments
 
 > Spring and Hibernate generate bytecode the way the compiler is intending to support it: by generating a java source code file and then compiling it without touching the source file/class
 > the annotation came from. Lombok goes into the parse tree (via non-public APIs) and mutates the AST in place.
@@ -133,7 +131,7 @@ More resources:
 * https://paluch.biz/blog/180-data-classes-considered-harmful.html
 * http://gregorriegler.com/2019/08/10/who-needs-lombok-anyhow.html
 
-#### Lombok and Entity
+## Lombok and Entity
 
 I've seen the same mistake done many times - ```@Entity``` class marked with ```@Data``` or  ```@EqualsAndHashCode``` leads to bad JPA practices:
 
@@ -149,7 +147,7 @@ I've seen the same mistake done many times - ```@Entity``` class marked with ```
 
 * Bad equals and hashcode implementations. [Vlad Michalcea Blog](https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/)
 
-#### Lombok and Logger
+## Lombok and Logger
 
 Lombok solution:
 
@@ -170,11 +168,11 @@ Just use IntelliJ live template and it will generate this for you with a small s
 private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger($CLASS$.class);
 ```
 
-#### Lombok and IntelliJ
+## Lombok and IntelliJ
 
 Starting from 2020.3 Lombok plugin is now built-in in IntelliJ. Don't forget to disable it, via Settings -> Plugins.
 
-## Endpoints
+# Endpoints
 
 Controller classes are mainly for documenting endpoint, logging requests then delegating to Service Layer and returning responses. They should contain as little business logic as possible.
 
@@ -296,13 +294,13 @@ Make sure to use ```@JsonCreator``` and getters, because Spring does not support
 
 ---
 
-### HTTP Methods
+## HTTP Methods
 
 GET, HEAD, OPTIONS, and TRACE methods are defined to be safe. Request methods are considered "safe" if their defined semantics are essentially **read-only**.
 
 [Source](https://tools.ietf.org/html/rfc7231#section-4.2)
 
-#### Idempotent Methods
+### Idempotent Methods
 
 PUT, DELETE, and safe request methods are idempotent.
 
@@ -314,7 +312,7 @@ after each DELETE call, but the response is different.
 
 ---
 
-#### GET
+### GET
 
 ``GET /resources`` (possibility of filter which returns empty list)
 ``GET /resources/{resource-id}``
@@ -377,7 +375,7 @@ Example of ``GET`` resource:
 
 ---
 
-#### POST
+### POST
 
 ``POST /employees``
 
@@ -412,7 +410,7 @@ public record EmployeeRequest(
 }
 ```
 
-#### PUT
+### PUT
 
 > The PUT method requests that the state of the target resource be **created or replaced** with the state defined by the representation enclosed
 > in the request message payload.
@@ -605,17 +603,17 @@ public class CustomLocalValidatorFactoryBean extends LocalValidatorFactoryBean {
 }
 ```
 
-#### PATCH vs POST
+### PATCH vs POST
 
-## Error Handling
+# Error Handling
 
 Errors within your application should be protocol-independent. For example, if an Employee does not exist, application throws ``NotFoundException``. Then depending on the protocol, may it be AMQP or
 HTTP, error should translate accordingly. For HTTP there are Spring's ``@RestControllerAdvice``. I've provided a list of exception handlers which are utilized in my other applications. Find them
 under ``exceptionhandlers`` package.
 
-## Repository
+# Repository
 
-#### Use ``getResultList()`` vs ``getSingleResult()``
+## Use ``getResultList()`` vs ``getSingleResult()``
 
 ``getSingleResult()`` throws ``NoResultException`` which is ``RuntimeException`` - if there is no result, thus you would have to wrap it into ``try/catch``. I advise utilizing ``getResultList()`` like
 so:
@@ -636,7 +634,7 @@ public Optional<EmployeeEntity> getEmployee(Long id) {
 
 ---
 
-#### Prefer JPQL versus Criteria builder.
+## Prefer JPQL versus Criteria builder.
 
 JPQL:
 
@@ -702,9 +700,9 @@ is not required.
 
 Example of dynamic queries can be found in ``EmployeeRepo``, ``EmployeeRepoCriteria`` and Spring's flavoured with ``Specification`` in ``EmployeeRepoSpringData``.
 
-#### TODO Remove scanning of Spring Data
+## TODO Remove scanning of Spring Data
 
-### Entities
+## Entities
 
 ``equals`` and ``hashCode`` is implemented according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* page 192 or in
 this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
@@ -723,7 +721,7 @@ Use ``LocalDateTime`` and friends from ``java.time`` for representation of date 
 
 ---
 
-#### Performant relationships
+### Performant relationships
 
 ![jpa-relationships.png](pictures/jpa-relationships.png)
 
@@ -733,7 +731,7 @@ For collections use Sets (``@ElementCollection`` including) and always implement
 
 ---
 
-#### Bidirectional synchronized methods.
+### Bidirectional synchronized methods.
 
 Even though it is adviced to use synchronized method, it's unclear why. Outstanding
 stackoverflow [question](https://stackoverflow.com/questions/64487322/why-do-we-need-bidirectional-synchronized-methods).
@@ -746,7 +744,7 @@ stackoverflow [question](https://stackoverflow.com/questions/64487322/why-do-we-
 
 [Source - Vlad Mihalcea Blog](https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/)
 
-## Optional and nullability
+# Optional and nullability
 
 Avoid nulls at all cost! Developer has to trust code otherwise you will find this pattern sprinkled ```Objects.requireNonNull``` or worse ```if (object != null) {}``` everywhere. Defend at the
 perimeter! (Timestamped link, watch time ~5 min): [Clean Code: The Next Chapter by Victor Rentea](https://youtu.be/wY_CUkU1zfw?t=2800)  
@@ -783,7 +781,7 @@ public class ExampleRequest {
 
 Here, for example, team can be null. However, if we can define a default value for that property, we should do it using ```requireNonNullElse``` or ```requireNonNullElseGet```.
 
-### When to use Optional according to Bryan Goetz
+## When to use Optional according to Bryan Goetz
 
 [Stackoverflow answer](https://stackoverflow.com/a/26328555/5486740):
 
@@ -796,7 +794,7 @@ Here, for example, team can be null. However, if we can define a default value f
 > highly dangerous method that undermined the whole purpose of ``Optional`` in the first place. Lesson learned.
 > (UPDATE: Java 10 has ``Optional.orElseThrow()``, which is semantically equivalent to ``get()``, but whose name is more appropriate.))
 
-### Records and nullability
+## Records and nullability
 
 [Intial question on OpenJDK mailing list](https://mail.openjdk.java.net/pipermail/amber-dev/2020-March/005670.html)
 
@@ -833,9 +831,9 @@ public record Person(Optional<String> name) {
 }
 ``` 
 
-## Tests
+# Tests
 
-### Naming
+## Naming
 
 Follow test method naming conventions ``methodUnderTest__[given/when]__[then]`` where ``given/when`` and ``then`` is optional. Example:
 
@@ -844,7 +842,7 @@ Follow test method naming conventions ``methodUnderTest__[given/when]__[then]`` 
 * ``getEmployee__whenInvalidEmployeeId__thenReturn400``
 * ``getEmployee__whenEmployeeDoesNotExists__thenReturn404``
 
-### Integration Tests
+## Integration Tests
 
 Reuse Spring's Application Context as much as possible. This will speed up your tests, because it doesn't need to restart, thus in perfect conditions, you'd only need to start Spring's Application
 once. To achieve this:
@@ -854,27 +852,27 @@ once. To achieve this:
 
 ---
 
-#### Testing time
+## Testing time
 
 TimeMachine class.
 
 ---
 
-#### Avoid ``@MockBeans``
+## Avoid ``@MockBeans``
 
 It will restart Spring's application.
 
 ---
 
-### Testing communication with other services
+## Testing communication with other services
 
-#### Wiremock
+### Wiremock
 
-#### Contract Based Testing
+### Contract Based Testing
 
-#### End-to-End Testing
+### End-to-End Testing
 
-### Misc
+## Misc
 
 ```
 assertThat(responseFrame).hasNoNullFieldsOrProperties();
@@ -882,13 +880,13 @@ assertThat(responseFrame).hasNoNullFieldsOrProperties();
 
 If property wrapped into ``Optional``, it is not null, hence the assertion will pass.
 
-### Resources
+## Resources
 
 https://aerokhin.com/2020/09/28/what-is-the-right-unit-in-unit-test-after-all/
 
 https://phauer.com/2019/modern-best-practices-testing-java/
 
-## Spring
+# Spring
 
 Favor construction injections vs setter/property injections. From Spring documentation:
 > The Spring team generally advocates constructor injection, as it lets you implement application components as immutable objects and ensures
@@ -924,7 +922,7 @@ public class AcmeProperties {
 
 No need to declare ```@Autowired``` on constructors if only one constructor exists.
 
-## Maven
+# Maven
 
 1. Try to have as little external dependencies as possible. Every dependency might block you in the future from migrating to newer Java version.
 2. Don't over-engineer plugins.
@@ -972,9 +970,9 @@ TODO
 
 http://andresalmiray.com/detecting-duplicate-dependencies-in-maven/
 
-## HTTP Client
+# HTTP Client
 
-## No Async/await frameworks
+# No Async/await frameworks
 
 > The performance we expect is similar to reactive frameworks. There is some added overhead, but I think it will be negligible in 99.9% of real-world use-cases.
 
@@ -986,14 +984,14 @@ Thread.startVirtualThread(() -> {
 });
 ```
 
-#### Thread "cost"
+## Thread "cost"
 
 | Platform Thread  | Virtual Thread |
 | ------------- | ------------- |
 | > 2KB metadata  | 200-300B metadata  |
 | 1MB Stack  | Pay-as-you-go stack  |
 
-#### Context switching
+## Context switching
 
 | Platform Thread  | Virtual Thread |
 | ------------- | ------------- |
@@ -1001,12 +999,12 @@ Thread.startVirtualThread(() -> {
 
 [Source](https://www.youtube.com/watch?v=fOEPEXTpbJA)
 
-#### Migration
+## Migration
 
 > If you have a common I/O operation guarded by a synchronized, replace the monitor with a ReentrantLock to let your application benefit fully from Loom’s scalability boost even before we fix
 > pinning by monitors (or, better yet, use the higher-performance StampedLock if you can). Currently, they are working on making JDK libraries Loom-friendly.
 
-### Structured concurrency
+## Structured concurrency
 
 Structured concurrency corrals thread lifetimes into code blocks. Its basic principle is this: threads that are created in some code unit must all terminate by the time we exit that code unit:
 
@@ -1020,7 +1018,7 @@ try (ExecutorService e = Executors.newUnboundedExecutor(vtf)) {
 
 Before we exit the TWR block, the current thread will block, waiting for all tasks — and their threads — to finish. Once outside it, we are guaranteed that the tasks have terminated.
 
-#### Structured Interruption
+### Structured Interruption
 
 ```
 try (var e = Executors.newUnboundedExecutor(myThreadFactory)
@@ -1030,13 +1028,13 @@ try (var e = Executors.newUnboundedExecutor(myThreadFactory)
 }
 ```
 
-#### Simple benchmarks
+## Simple benchmarks
 
 JFR Show threads
 
 https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpServer.html
 
-### Key Takeaways
+## Key Takeaways
 
 * A virtual thread is a Thread — in code, at runtime, in the debugger and in the profiler.
 * A virtual thread is not a wrapper around an OS thread, but a Java entity.
@@ -1054,7 +1052,7 @@ Resources:
 * [On the Performance of User-Mode Threads and Coroutines](https://inside.java/2020/08/07/loom-performance/)
 * [Project Loom And Structured Concurrency](https://www.javaadvent.com/2020/12/project-loom-and-structured-concurrency.html)
 
-## Application.yaml
+# Application.yaml
 
 Full ``application.yml``:
 
@@ -1128,7 +1126,7 @@ Examine each step by step.
 
 ---
 
-### Flyway configuration
+## Flyway configuration
 
 ```
   flyway:
@@ -1141,7 +1139,7 @@ Examine each step by step.
 
 ---
 
-### Datasource
+## Datasource
 
 ```
   datasource:
@@ -1154,7 +1152,7 @@ Examine each step by step.
 
 ---
 
-### JPA
+## JPA
 
 ```
   jpa:
@@ -1174,7 +1172,7 @@ Examine each step by step.
 
 ---
 
-### Management endpoints
+## Management endpoints
 
 ```
 management:
@@ -1193,15 +1191,15 @@ management:
       enabled: true
 ```
 
-## Kubernetes pod template
+# Kubernetes pod template
 
-## Database
+# Database
 
-### Database migration
+## Database migration
 
-### Database types
+## Database types
 
-#### SQL Server
+## SQL Server
 
 For datetime use ```datetime2```. Mainly this [stackoverflow question has all the answers](https://stackoverflow.com/questions/1334143/datetime2-vs-datetime-in-sql-server/1334193):
 > datetime2 wins in most aspects except (old apps Compatibility)
@@ -1214,16 +1212,16 @@ For binary data (e.g. ``byte[]``) save into ``VARBINARY(MAX)``:
 
 [Stackoverflow question and answer](https://stackoverflow.com/questions/5613898/storing-images-in-sql-server)
 
-### Use DateTime instead of V1, V2 etc
+## Use DateTime instead of V1, V2 etc
 
-## Git
+# Git
 
 What happens when tag is equal to branch name? It will checkout to tag, instead of branch. That means, that new code has been commited to branch and CI tool would like to checkout to the head of named
 branch (using branch name), it will checkout to tag, and you won't have your changes deployed.
 
-## Kotlin
+# Kotlin
 
-### Kotlin and future compatibility
+## Kotlin and future compatibility
 
 > As far as the Java platform (AKA "the JVM") goes, Kotlin is painting itself into a corner. Kotlin was designed in 2009-10, in the Java 7 days, around the time of the Oracle acquisition,
 > and at a time of stagnation for Java due to Sun's decline. At the time, Android was also quite similar to Java. Kotlin was a great design in those conditions. Things are very different today.
@@ -1240,7 +1238,7 @@ branch (using branch name), it will checkout to tag, and you won't have your cha
 > TL;DR: A full-capability, low-overhead, multi-platform language is hard to pull off in the long run when you have low market share on all of those platforms (except Android) and little or no
 > influence on any of them. This was viable under some accidental circumstances, but those are no longer holding.
 
-### Kotlin's other known issues
+## Kotlin's other known issues
 
 * https://github.com/jacoco/jacoco/issues/1086
 

@@ -1,4 +1,75 @@
-# Table of content
+# Table of Content
+
+- [Table of content](#table-of-content)
+    * [Goal](#goal)
+    * [How to launch (TODO)](#how-to-launch-todo)
+    * [Project Structure](#project-structure)
+    * [Lombok](#lombok)
+        - [Main Arguments](#main-arguments)
+        - [Lombok and Entity](#lombok-and-entity)
+        - [Lombok and Logger](#lombok-and-logger)
+        - [Lombok and IntelliJ](#lombok-and-intellij)
+    * [Endpoints](#endpoints)
+        + [HTTP Methods](#http-methods)
+            - [Idempotent Methods](#idempotent-methods)
+            - [GET](#get)
+            - [POST](#post)
+            - [PUT](#put)
+        + [PATCH](#patch)
+            - [JSON Patch](#json-patch)
+            - [JSON Merge Patch](#json-merge-patch)
+            - [PATCH vs POST](#patch-vs-post)
+    * [Error Handling](#error-handling)
+    * [Repository](#repository)
+        - [Use ``getResultList()`` vs ``getSingleResult()``](#use-getresultlist-vs-getsingleresult)
+        - [Prefer JPQL versus Criteria builder.](#prefer-jpql-versus-criteria-builder)
+        - [TODO Remove scanning of Spring Data](#todo-remove-scanning-of-spring-data)
+
+        + [Entities](#entities)
+            - [Performant relationships](#performant-relationships)
+            - [Bidirectional synchronized methods.](#bidirectional-synchronized-methods)
+    * [Optional and nullability](#optional-and-nullability)
+        + [When to use Optional according to Bryan Goetz](#when-to-use-optional-according-to-bryan-goetz)
+        + [Records and nullability](#records-and-nullability)
+    * [Tests](#tests)
+        + [Naming](#naming)
+        + [Integration Tests](#integration-tests)
+            - [Testing time](#testing-time)
+            - [Avoid ``@MockBeans``](#avoid-mockbeans)
+        + [Testing communication with other services](#testing-communication-with-other-services)
+            - [Wiremock](#wiremock)
+            - [Contract Based Testing](#contract-based-testing)
+            - [End-to-End Testing](#end-to-end-testing)
+        + [Misc](#misc)
+        + [Resources](#resources)
+    * [Spring](#spring)
+    * [Maven](#maven)
+    * [HTTP Client](#http-client)
+    * [No Async/await frameworks](#no-asyncawait-frameworks)
+        - [Thread "cost"](#thread-cost)
+        - [Context switching](#context-switching)
+        - [Migration](#migration)
+
+        + [Structured concurrency](#structured-concurrency)
+            - [Structured Interruption](#structured-interruption)
+            - [Simple benchmarks](#simple-benchmarks)
+        + [Key Takeaways](#key-takeaways)
+    * [Application.yaml](#applicationyaml)
+        + [Flyway configuration](#flyway-configuration)
+        + [Datasource](#datasource)
+        + [JPA](#jpa)
+        + [Management endpoints](#management-endpoints)
+    * [Kubernetes pod template](#kubernetes-pod-template)
+    * [Database](#database)
+        + [Database migration](#database-migration)
+        + [Database types](#database-types)
+            - [SQL Server](#sql-server)
+        + [Use DateTime instead of V1, V2 etc](#use-datetime-instead-of-v1-v2-etc)
+    * [Git](#git)
+    * [Kotlin](#kotlin)
+        + [Kotlin and future compatibility](#kotlin-and-future-compatibility)
+        + [Kotlin's other known issues](#kotlins-other-known-issues)
+- [TODO](#todo)
 
 ## Goal
 
@@ -534,7 +605,7 @@ public class CustomLocalValidatorFactoryBean extends LocalValidatorFactoryBean {
 }
 ```
 
-##### PATCH vs POST
+#### PATCH vs POST
 
 ## Error Handling
 
@@ -1172,3 +1243,7 @@ branch (using branch name), it will checkout to tag, and you won't have your cha
 ### Kotlin's other known issues
 
 * https://github.com/jacoco/jacoco/issues/1086
+
+# TODO
+
+Check Prometheus endpoint with and without micrometer dependency. It might expose data which could explode cardinality.

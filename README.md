@@ -1245,3 +1245,7 @@ branch (using branch name), it will checkout to tag, and you won't have your cha
 # TODO
 
 Check Prometheus endpoint with and without micrometer dependency. It might expose data which could explode cardinality.
+
+# Java SSL/TLS
+
+## Spring Security

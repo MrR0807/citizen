@@ -107,23 +107,24 @@ public class EmployeeService {
 
     @Transactional
     public Employee patchEmployee(Long id, PatchEmployeeRequest request) {
-        var employee = this.getEmployee(id);
-        var patchedEmployee = this.patchEmployee(request, employee);
+//        var employee = this.getEmployee(id);
+//        var patchedEmployee = this.patchEmployee(request, employee);
 
-        return this.updateEmployee(id, patchedEmployee);
+        return null;
+//        return this.updateEmployee(id, patchedEmployee);
     }
 
-    private Employee patchEmployee(PatchEmployeeRequest request, Employee employee) {
-        var employeeBuilder = employee.builder();
-        request.getSocialSecurityNumber().ifSet(employeeBuilder::setSocialSecurityNumber);
-        request.getFirstName().ifSet(employeeBuilder::setFirstName);
-        request.getLastName().ifSet(employeeBuilder::setLastName);
-        request.getJobTitle().ifSet(employeeBuilder::setJobTitle);
-        request.getTeam().ifSet(teamName ->
-        {
-            var team = this.getTeam(teamName);
-            employeeBuilder.setTeam(team);
-        });
-        return employeeBuilder.build();
-    }
+//    private Employee patchEmployee(PatchEmployeeRequest request, Employee employee) {
+//        var employeeBuilder = employee.builder();
+//        request.getSocialSecurityNumber().ifSet(employeeBuilder::setSocialSecurityNumber);
+//        request.getFirstName().ifSet(employeeBuilder::setFirstName);
+//        request.getLastName().ifSet(employeeBuilder::setLastName);
+//        request.getJobTitle().ifSet(employeeBuilder::setJobTitle);
+//        request.getTeam().ifSet(teamName ->
+//        {
+//            var team = this.getTeam(teamName);
+//            employeeBuilder.setTeam(team);
+//        });
+//        return employeeBuilder.build();
+//    }
 }

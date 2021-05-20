@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.4.0</version>
+        <version>2.4.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.good</groupId>
@@ -15,7 +15,6 @@
     <description>Demo project for Spring Boot</description>
 
     <properties>
-        <java.version>15</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring.wiremock.version>2.2.5.RELEASE</spring.wiremock.version>
@@ -94,7 +93,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>9.1.0.jre15-preview</version>
+            <version>9.3.1.jre15-preview</version>
         </dependency>
 
         <dependency>
@@ -144,13 +143,6 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>io.soabase.record-builder</groupId>-->
-        <!--            <artifactId>record-builder-core</artifactId>-->
-        <!--            <version>1.11.ea</version>-->
-        <!--        </dependency>-->
-
-
         <!-- Pact dependencies -->
 
         <dependency>
@@ -187,17 +179,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>15</release>
-                    <compilerArgs>--enable-preview</compilerArgs>
-                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                    <source>16</source>
+                    <target>16</target>
                     <parameters>true</parameters>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>--enable-preview</argLine>
                 </configuration>
             </plugin>
         </plugins>

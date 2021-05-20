@@ -77,7 +77,7 @@ This is an example of how good (in my opinion) application should look like.
 
 Either using docker compose, docker or kubernetes.
 
-```
+```shell
 mvn clean install
 ```
 
@@ -89,9 +89,12 @@ Package by feature not by layer.
 
 * Drawbacks of **packaging classes by technical concerns**:
     * Poor overview of all classes that belong to a feature.
-    * Tendency to generic, reused and complex code, which is hard to understand and changes can easily break other use cases as the impact of a change is hard to grasp. Often, this approach leads to
-      central classes containing all methods for every use case. Over time, those methods get more and more abstracted (with extra parameters and generics) to fulfill more use cases.
-* Instead, package **by feature** and create packages that contain all classes that are required for a feature. The benefits are:
+    * Tendency to generic, reused and complex code, which is hard to understand and changes can easily break other use
+      cases as the impact of a change is hard to grasp. Often, this approach leads to central classes containing all
+      methods for every use case. Over time, those methods get more and more abstracted (with extra parameters and
+      generics) to fulfill more use cases.
+* Instead, package **by feature** and create packages that contain all classes that are required for a feature. The
+  benefits are:
     * Better discoverability and overview
     * Self-contained and independent
     * Simpler code
@@ -103,11 +106,14 @@ Package by feature not by layer.
 
 # Lombok
 
-**Do not use Lombok**. [Records](https://openjdk.java.net/jeps/359) + [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
-should cover almost all cases like DTO's and Request/Response models only exception I see is with entities.
+**Do not use Lombok**. [Records](https://openjdk.java.net/jeps/359)
 
-```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small part of your application, and does not justify adding Lombok. If you're truly bothered by
-getters/setters you can just make properties ``public``.
++ [withers](https://github.com/openjdk/amber-docs/blob/master/eg-drafts/reconstruction-records-and-classes.md)
+  should cover almost all cases like DTO's and Request/Response models only exception I see is with entities.
+
+```@Entity``` classes will consist of getters and setters boilerplate, but they make up a very small part of your
+application, and does not justify adding Lombok. If you're truly bothered by getters/setters you can just make
+properties ``public``.
 
 ## Main Arguments
 
@@ -121,8 +127,18 @@ getters/setters you can just make properties ``public``.
 
 - [Lombok developers](https://stackoverflow.com/questions/6107197/how-does-lombok-work):
 
+> In a few words, the strategy is this: use of JDK internals by libraries is tolerated as long as they notify the user that they’re doing so with add-opens.
+> This is because such libraries become tied to JDK versions, and so must be vigilant when updating, and their users need to be aware of maintenance issues
+> libraries might impose on them (there are also security issues when it comes to libraries that do this at runtime). So, you can do what you like,
+> but if you impose a potential maintenance burden on your users, you must let them know about it. When all loopholes are closed, libraries will need to decide
+> whether to not use internals or acclimate their users to add-opens. In some months there will be no way — using Unsafe, attach, native code etc. —
+> to hack JDK internals without express approval of the application.
+
+- [Ron Pressler](https://github.com/projectlombok/lombok/issues/2681)
+
 More resources:
 
+* https://github.com/projectlombok/lombok/issues/2681
 * https://youtrack.jetbrains.com/issue/IDEA-248146
 * https://github.com/rzwitserloot/lombok/issues/1723
 * https://github.com/jhipster/generator-jhipster/issues/398
@@ -133,7 +149,8 @@ More resources:
 
 ## Lombok and Entity
 
-I've seen the same mistake done many times - ```@Entity``` class marked with ```@Data``` or  ```@EqualsAndHashCode``` leads to bad JPA practices:
+I've seen the same mistake done many times - ```@Entity``` class marked with ```@Data``` or  ```@EqualsAndHashCode```
+leads to bad JPA practices:
 
 * Missing bidirectional synchronized methods.
 
@@ -145,20 +162,27 @@ I've seen the same mistake done many times - ```@Entity``` class marked with ```
 
 [Source - Vlad Mihalcea Blog](https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/)
 
-* Bad equals and hashcode implementations. [Vlad Michalcea Blog](https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/)
+* Bad equals and hashcode
+  implementations. [Vlad Michalcea Blog](https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/)
+
+* Including lazy attributes via ```@ToString```.
+
+[Lombok and JPA: What may go wrong?](https://dev.to/aleksey/lombok-and-jpa-what-may-go-wrong-1lcm)
 
 ## Lombok and Logger
 
 Lombok solution:
 
-```
+```java
+
 @Slf4j
-public class LogExample {}
+public class LogExample {
+}
 
 //Generates 
 
 public class LogExample {
- private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LogExample.class);
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LogExample.class);
 }
 ```
 
@@ -174,43 +198,44 @@ Starting from 2020.3 Lombok plugin is now built-in in IntelliJ. Don't forget to 
 
 # Endpoints
 
-Controller classes are mainly for documenting endpoint, logging requests then delegating to Service Layer and returning responses. They should contain as little business logic as possible.
+Controller classes are mainly for documenting endpoint, logging requests then delegating to Service Layer and returning
+responses. They should contain as little business logic as possible.
 
-```
-    @GetMapping("{id}")
-    @ApiOperation("Get information about one employees")
-    public Employee getEmployee(@PathVariable("id") @Min(1) Long id) {
-        LOGGER.info("Get employee request. Employee id: {}", id);
+```java
+@GetMapping("{id}")
+@ApiOperation("Get information about one employees")
+public Employee getEmployee(@PathVariable("id") @Min(1) Long id){
+    LOGGER.info("Get employee request. Employee id: {}",id);
 
-        return this.employeeService.getEmployee(id);
-    }
+    return this.employeeService.getEmployee(id);
+}
 ```
 
 ---
 
 Don't use ``ResponseEntity`` boilerplate:
 
-```
-    @GetMapping("{id}")
-    @ApiOperation("Get information about one employees")
-    public ResponseEntity<Employee> getEmployee(@PathVariable("id") @Min(1) Long id) {
-        LOGGER.info("Get employee request. Employee id: {}", id);
+```java
+@GetMapping("{id}")
+@ApiOperation("Get information about one employees")
+public ResponseEntity<Employee> getEmployee(@PathVariable("id") @Min(1) Long id){
+    LOGGER.info("Get employee request. Employee id: {}",id);
 
-        var employee = this.employeeService.getEmployee(id);
-        return ResponseEntity.ok(employee);
-    }
+    var employee=this.employeeService.getEmployee(id);
+    return ResponseEntity.ok(employee);
+}
 ```
 
 Just return the object:
 
-```
-    @GetMapping("{id}")
-    @ApiOperation("Get information about one employees")
-    public Employee getEmployee(@PathVariable("id") @Min(1) Long id) {
-        LOGGER.info("Get employee request. Employee id: {}", id);
+```java
+@GetMapping("{id}")
+@ApiOperation("Get information about one employees")
+public Employee getEmployee(@PathVariable("id") @Min(1) Long id){
+    LOGGER.info("Get employee request. Employee id: {}",id);
 
-        return this.employeeService.getEmployee(id);
-    }
+    return this.employeeService.getEmployee(id);
+}
 ```
 
 Unless you have clear need for specific Response, like ``ResponseEntity.noContent()``, ``ResponseEntity.created(uriLocation).body(body);``
@@ -221,13 +246,10 @@ or ``ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(body);`` etc.
 Use ``@ApiOperation`` to describe an endpoint's purpose. There is no need to describe ``response`` or ``responseContainer`` as it is inferred by SpringFox automatically.
 
 ---
-
-Define input models (TODO Daumantas).
-
+Define input models.
 ----
 
 Request and Response models should be immutable objects and have (this is for easier migration to [records](https://openjdk.java.net/jeps/359)):
-
 * ``private final`` instance variables;
 * ``all-args`` constructor with ``@JsonCreator``;
 * ``hashCode``, ``equals``, ``toString``;
@@ -240,7 +262,7 @@ After Java 16+ use ``records``.
 
 **Whenever you have Collections of objects, don't forget to annotate ``@NotNull`` for the container type:**
 
-```
+```java
 BAD
 @NotNull
 List<Integer> numbers;
@@ -254,9 +276,7 @@ The difference is that in first example, request can be sent with ``"numbers": [
 
 ----
 
-
 https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-object-graph-validation
-
 
 ----
 
@@ -264,14 +284,14 @@ https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#s
 
 Example:
 
-```
-    @GetMapping("{id}")
-    @ApiOperation("Get information about one employees")
-    public void getEmployee(@PathVariable("id") @Min(1) Long id) { <----------------- @Min
-        LOGGER.info("Get all employee request. Employee id: {}", id);
+```java
+@GetMapping("{id}")
+@ApiOperation("Get information about one employees")
+public void getEmployee(@PathVariable("id") @Min(1) Long id){<-----------------@Min
+    LOGGER.info("Get all employee request. Employee id: {}",id);
 
-        employeeService.getEmployee();
-    }
+    employeeService.getEmployee();
+}
 ```
 
 If ```@Validated``` is missing, then ```@Min``` will not be taken into account, thus you could pass -1 as an ``id``.
@@ -280,14 +300,14 @@ If ```@Validated``` is missing, then ```@Min``` will not be taken into account, 
 
 If you want to have filters for endpoints, like so:
 
-```
-    @GetMapping
-    @ApiOperation("Get information about all employees")
-    public Set<Employee> getAllEmployees(EmployeeFilter employeeFilter) {
-        LOGGER.info("Get all employees request. Employee filter {}", employeeFilter);
+```java
+@GetMapping
+@ApiOperation("Get information about all employees")
+public Set<Employee> getAllEmployees(EmployeeFilter employeeFilter){
+    LOGGER.info("Get all employees request. Employee filter {}",employeeFilter);
 
-        return this.employeeService.getAllEmployees(employeeFilter);
-    }
+    return this.employeeService.getAllEmployees(employeeFilter);
+}
 ```
 
 Make sure to use ```@JsonCreator``` and getters, because Spring does not support Records for request params yet as of Spring Boot 2.3. Have not tested with higher versions.
@@ -296,7 +316,8 @@ Make sure to use ```@JsonCreator``` and getters, because Spring does not support
 
 ## HTTP Methods
 
-GET, HEAD, OPTIONS, and TRACE methods are defined to be safe. Request methods are considered "safe" if their defined semantics are essentially **read-only**.
+GET, HEAD, OPTIONS, and TRACE methods are defined to be safe. Request methods are considered "safe" if their defined
+semantics are essentially **read-only**.
 
 [Source](https://tools.ietf.org/html/rfc7231#section-4.2)
 
@@ -304,11 +325,13 @@ GET, HEAD, OPTIONS, and TRACE methods are defined to be safe. Request methods ar
 
 PUT, DELETE, and safe request methods are idempotent.
 
-Idempotent - operation can be repeated and the outcome will be the same (the server's state will remain the same). For example, PUT employee will either create or update existing. Doesn't matter, how
-many times you will repeat the same operation it will always return same response.
+Idempotent - operation can be repeated and the outcome will be the same (the server's state will remain the same). For
+example, PUT employee will either create or update existing. Doesn't matter, how many times you will repeat the same
+operation it will always return same response.
 
-The problem with DELETE, which if successful would normally return a 200 (OK) or 204 (No Content), will often return a 404 (Not Found) on subsequent calls. However, the state on the server is the same
-after each DELETE call, but the response is different.
+The problem with DELETE, which if successful would normally return a 200 (OK) or 204 (No Content), will often return a
+404 (Not Found) on subsequent calls. However, the state on the server is the same after each DELETE call, but the
+response is different.
 
 ---
 
@@ -322,14 +345,14 @@ If ``GET`` list does not contain resources (with/without filters) return an empt
 
 Example of ``GET`` list:
 
-```
-    @GetMapping
-    @ApiOperation("Get information about all employees")
-    public Set<Employee> getAllEmployees(EmployeeFilter filter) {
-        LOGGER.info("Get all employees request. Employee filter {}", filter);
+```java
+@GetMapping
+@ApiOperation("Get information about all employees")
+public Set<Employee> getAllEmployees(EmployeeFilter filter){
+    LOGGER.info("Get all employees request. Employee filter {}",filter);
 
-        return this.employeeService.getAllEmployees(filter);
-    }
+    return this.employeeService.getAllEmployees(filter);
+}
 
 //This will be record in the future
 public class EmployeeFilter {
@@ -363,14 +386,14 @@ public class EmployeeFilter {
 
 Example of ``GET`` resource:
 
-```
-    @GetMapping("{id}")
-    @ApiOperation("Get information about one employees")
-    public Employee getEmployee(@PathVariable("id") @Min(1) Long id) {
-        LOGGER.info("Get employee request. Employee id: {}", id);
+```java
+@GetMapping("{id}")
+@ApiOperation("Get information about one employees")
+public Employee getEmployee(@PathVariable("id") @Min(1) Long id){
+    LOGGER.info("Get employee request. Employee id: {}",id);
 
-        return this.employeeService.getEmployee(id);
-    }
+    return this.employeeService.getEmployee(id);
+}
 ```
 
 ---
@@ -391,14 +414,14 @@ Questions:
 
 Example:
 
-```
-    @PostMapping
-    @ApiOperation("Add employee")
-    public void addEmployee(@RequestBody @Valid EmployeeRequest request) {
-        LOGGER.info("Add employee. Employee: {}", request);
+```java
+@PostMapping
+@ApiOperation("Add employee")
+public void addEmployee(@RequestBody @Valid EmployeeRequest request){
+    LOGGER.info("Add employee. Employee: {}",request);
 
-        this.employeeService.addEmployee(request);
-    }
+    this.employeeService.addEmployee(request);
+}
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public record EmployeeRequest(
@@ -406,8 +429,7 @@ public record EmployeeRequest(
         @NotBlank @Size(max = 255) String name,
         @NotBlank @Size(max = 255) String lastName,
         @NotBlank @Size(max = 255) String team,
-        @NotNull JobTitle jobTitle) {
-}
+        @NotNull JobTitle jobTitle) {}
 ```
 
 ### PUT
@@ -428,14 +450,14 @@ Questions:
 
 Example:
 
-```
-    @PutMapping
-    @ApiOperation("Add employee or update")
-    public Employee putEmployee(@RequestBody @Valid EmployeeRequest request) {
-        LOGGER.info("Add or update employee. Request: {}", request);
+```java
+@PutMapping
+@ApiOperation("Add employee or update")
+public Employee putEmployee(@RequestBody @Valid EmployeeRequest request){
+    LOGGER.info("Add or update employee. Request: {}",request);
 
-        return this.employeeService.putEmployee(request);
-    }
+    return this.employeeService.putEmployee(request);
+}
 ```
 
 ### PATCH
@@ -458,14 +480,14 @@ Content-Length: 326
 Content-Type: application/json-patch+json
 If-Match: "abc123"
 
-   [
-     { "op": "test", "path": "/a/b/c", "value": "foo" },
-     { "op": "remove", "path": "/a/b/c" },
-     { "op": "add", "path": "/a/b/c", "value": [ "foo", "bar" ] },
-     { "op": "replace", "path": "/a/b/c", "value": 42 },
-     { "op": "move", "from": "/a/b/c", "path": "/a/b/d" },
-     { "op": "copy", "from": "/a/b/d", "path": "/a/b/e" }
-   ]
+[
+    { "op": "test", "path": "/a/b/c", "value": "foo" },
+    { "op": "remove", "path": "/a/b/c" },
+    { "op": "add", "path": "/a/b/c", "value": [ "foo", "bar" ] },
+    { "op": "replace", "path": "/a/b/c", "value": 42 },
+    { "op": "move", "from": "/a/b/c", "path": "/a/b/d" },
+    { "op": "copy", "from": "/a/b/d", "path": "/a/b/e" }
+]
 ```
 
 Not going into much detail, this kind of PATCH'ing is not intuitive and complicated. I'd recommend to stick with JSON Merge Patch.
@@ -501,8 +523,10 @@ Content-Type: application/merge-patch+json
 
 When applied to the target resource, the value of the "a" member is replaced with "z" and "f" is removed, leaving the remaining content untouched.
 
-To acheive this in Java, I had to create a wrapper class ```PatchField<T>```. It solves Java's objects problem, where each object/property, if not initialized, will have default value (``null`` for
-reference types, ``false`` for primitive boolean and ``0`` for primitive numbers). However, how can we know when ``null`` was set by consumer and when it was set during object creation.
+To acheive this in Java, I had to create a wrapper class ```PatchField<T>```. It solves Java's objects problem, where
+each object/property, if not initialized, will have default value (``null`` for reference types, ``false`` for primitive
+boolean and ``0`` for primitive numbers). However, how can we know when ``null`` was set by consumer and when it was set
+during object creation.
 
 Say, we have:
 
@@ -513,8 +537,7 @@ public record EmployeeRequest(
         String name,
         String lastName,
         String team,
-        JobTitle jobTitle) {
-}
+        JobTitle jobTitle) {}
 ```
 
 If I want to *nullify* only ``name`` and leave the rest of Employee properties unchanged I would pass:
@@ -529,7 +552,7 @@ However, all objects would be initialized as nulls in this case, and it would *n
 
 Enter ```PatchField<T>```:
 
-```
+```java
 public record PatchField<T>(boolean isSet, T value) {
 
     public PatchField(T value) {
@@ -550,7 +573,7 @@ public record PatchField<T>(boolean isSet, T value) {
 
 And ``PatchEmployeeRequest`` looks like so:
 
-```
+```java
 public class PatchEmployeeRequest {
 
     private PatchField<@Min(0) Long> socialSecurityNumber = PatchField.empty();
@@ -565,21 +588,23 @@ public class PatchEmployeeRequest {
 
     public void setSocialSecurityNumber(Long socialSecurityNumber) {
         this.socialSecurityNumber = new PatchField<>(socialSecurityNumber);
-    }    
+    }
 
     //Remaining getters and Setters
     ...
 }
 ```
 
-We require to have ``Getters`` and ``Setters``, because Jackson invokes setters only on those methods which were in the request body. In this example's case - only ``name``. We also require to
-initialize each property with ``PatchField.empty();`` to differentiate when PatchField instance set by deserializing framework and when by us.
+We require to have ``Getters`` and ``Setters``, because Jackson invokes setters only on those methods which were in the
+request body. In this example's case - only ``name``. We also require to initialize each property
+with ``PatchField.empty();`` to differentiate when PatchField instance set by deserializing framework and when by us.
 
-Lastly, if you want to add jakarta validation annotations on Type parameters, like ``PatchField<@Min(0) Long> socialSecurityNumber``, you have to create custom ``Extractor`` and register with Spring.
+Lastly, if you want to add jakarta validation annotations on Type parameters, like ``PatchField<@Min(0) Long> socialSecurityNumber``,
+you have to create custom ``Extractor`` and register with Spring.
 
 Extractor as [per documentation](https://docs.jboss.org/hibernate/validator/6.0/reference/en-US/html_single/#_implementing_a_code_valueextractor_code):
 
-```
+```java
 public class PatchFieldValueExtractor implements ValueExtractor<PatchField<@ExtractedValue ?>> {
 
     @Override
@@ -591,7 +616,8 @@ public class PatchFieldValueExtractor implements ValueExtractor<PatchField<@Extr
 
 Register with Spring:
 
-```
+```java
+
 @Component
 public class CustomLocalValidatorFactoryBean extends LocalValidatorFactoryBean {
 
@@ -607,29 +633,30 @@ public class CustomLocalValidatorFactoryBean extends LocalValidatorFactoryBean {
 
 # Error Handling
 
-Errors within your application should be protocol-independent. For example, if an Employee does not exist, application throws ``NotFoundException``. Then depending on the protocol, may it be AMQP or
-HTTP, error should translate accordingly. For HTTP there are Spring's ``@RestControllerAdvice``. I've provided a list of exception handlers which are utilized in my other applications. Find them
-under ``exceptionhandlers`` package.
+Errors within your application should be protocol-independent. For example, if an Employee does not exist, application
+throws ``NotFoundException``. Then depending on the protocol, may it be AMQP or HTTP, error should translate
+accordingly. For HTTP there are Spring's ``@RestControllerAdvice``. I've provided a list of exception handlers which are
+utilized in my other applications. Find them under ``exceptionhandlers`` package.
 
 # Repository
 
 ## Use ``getResultList()`` vs ``getSingleResult()``
 
-``getSingleResult()`` throws ``NoResultException`` which is ``RuntimeException`` - if there is no result, thus you would have to wrap it into ``try/catch``. I advise utilizing ``getResultList()`` like
-so:
+``getSingleResult()`` throws ``NoResultException`` which is ``RuntimeException`` - if there is no result, thus you would have to wrap it
+into ``try/catch``. I advise utilizing ``getResultList()`` like so:
 
-```
-public Optional<EmployeeEntity> getEmployee(Long id) {
-        var employees = em.createQuery("""
-                SELECT e FROM EmployeeEntity e
-                JOIN FETCH e.projects p
-                JOIN FETCH e.team t
-                WHERE e.id = :id""", EmployeeEntity.class)
-                .setParameter("id", id)
-                .getResultList();
-        
-        return Optional.ofNullable(employees.isEmpty() ? null : employees.get(0));
-    }
+```java
+public Optional<EmployeeEntity> getEmployee(Long id){
+    var employees=em.createQuery("""
+            SELECT e FROM EmployeeEntity e
+            JOIN FETCH e.projects p
+            JOIN FETCH e.team t
+            WHERE e.id = :id""",EmployeeEntity.class)
+    .setParameter("id",id)
+    .getResultList();
+
+    return Optional.ofNullable(employees.isEmpty()?null:employees.get(0));
+}
 ```
 
 ---
@@ -638,65 +665,65 @@ public Optional<EmployeeEntity> getEmployee(Long id) {
 
 JPQL:
 
-```
-    public Optional<EmployeeEntity> getEmployee(Long id) {
-        var employees = this.em.createQuery("""
-                SELECT e FROM EmployeeEntity e
-                JOIN FETCH e.projects p
-                JOIN FETCH e.team t
-                WHERE e.id = :id""", EmployeeEntity.class)
-                .setParameter("id", id)
-                .getResultList();
+```java
+public Optional<EmployeeEntity> getEmployee(Long id){
+    var employees=this.em.createQuery("""
+        SELECT e FROM EmployeeEntity e
+        JOIN FETCH e.projects p
+        JOIN FETCH e.team t
+        WHERE e.id = :id""",EmployeeEntity.class)
+    .setParameter("id",id)
+    .getResultList();
 
-        return Optional.ofNullable(employees.isEmpty() ? null : employees.get(0));
-    }
+    return Optional.ofNullable(employees.isEmpty()?null:employees.get(0));
+}
 ```
 
 VS
 
 CriteriaBuilder:
 
-```
-    public Optional<EmployeeEntity> getEmployee(Long id) {
-        var cb = this.em.getCriteriaBuilder();
-        var query = cb.createQuery(EmployeeEntity.class);
-        var employeeEntity = query.from(EmployeeEntity.class);
-        employeeEntity.fetch("team");
-        employeeEntity.fetch("projects");
-        query.select(employeeEntity)
-                .where(cb.equal(employeeEntity.get("id"), id));
+```java
+public Optional<EmployeeEntity> getEmployee(Long id){
+    var cb=this.em.getCriteriaBuilder();
+    var query=cb.createQuery(EmployeeEntity.class);
+    var employeeEntity=query.from(EmployeeEntity.class);
+    employeeEntity.fetch("team");
+    employeeEntity.fetch("projects");
+    query.select(employeeEntity)
+    .where(cb.equal(employeeEntity.get("id"),id));
 
-        var employees = this.em.createQuery(query).getResultList();
+    var employees=this.em.createQuery(query).getResultList();
 
-        return Optional.ofNullable(employees.isEmpty() ? null : employees.get(0));
-    }
+    return Optional.ofNullable(employees.isEmpty()?null:employees.get(0));
+}
 ```
 
 VS
 
 Spring Data:
 
-```
-    @Override
-    @Query("""
-            SELECT e FROM EmployeeEntity e
-                            JOIN FETCH e.projects p
-                            JOIN FETCH e.team t
-                            WHERE e.id = :id""")
-    Optional<EmployeeEntity> findById(Long id);
+```java
+@Override
+@Query("""
+        SELECT e FROM EmployeeEntity e
+                        JOIN FETCH e.projects p
+                        JOIN FETCH e.team t
+                        WHERE e.id = :id""")
+Optional<EmployeeEntity> findById(Long id);
 ```
 
 or:
 
-```
-    @Override
-    @EntityGraph(attributePaths = {"team", "projects"})
-    Optional<EmployeeEntity> findById(Long id);
+```java
+@Override
+@EntityGraph(attributePaths = {"team", "projects"})
+Optional<EmployeeEntity> findById(Long id);
 ```
 
-We need to define JPQL query, because Spring cannot join tables optimally, unless you define ``fetch = FetchType.EAGER``. With ManyToMany relationship,
-this [can lead to N+1 problem](https://vladmihalcea.com/n-plus-1-query-problem/). Or solution relies on using ``@EntityGraph``. Then, ``fetch = FetchType.EAGER``
-is not required.
+We need to define JPQL query, because Spring cannot join tables optimally, unless you define ``fetch = FetchType.EAGER``.
+With ManyToMany relationship, this [can lead to N+1 problem](https://vladmihalcea.com/n-plus-1-query-problem/). Or
+solution relies on using ``@EntityGraph``. Then, ``fetch = FetchType.EAGER`` is not required.
 
 Example of dynamic queries can be found in ``EmployeeRepo``, ``EmployeeRepoCriteria`` and Spring's flavoured with ``Specification`` in ``EmployeeRepoSpringData``.
 
@@ -704,8 +731,8 @@ Example of dynamic queries can be found in ``EmployeeRepo``, ``EmployeeRepoCrite
 
 ## Entities
 
-``equals`` and ``hashCode`` is implemented according to Vlad Mihalcea. More information can be found in *High-Performance Java Persistence* page 192 or in
-this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
+``equals`` and ``hashCode`` is implemented according to Vlad Mihalcea. More information can be found in *
+High-Performance Java Persistence* page 192 or in this [link](https://vladmihalcea.com/the-best-way-to-implement-equals-hashcode-and-tostring-with-jpa-and-hibernate/).
 
 ---
 
@@ -746,15 +773,16 @@ stackoverflow [question](https://stackoverflow.com/questions/64487322/why-do-we-
 
 # Optional and nullability
 
-Avoid nulls at all cost! Developer has to trust code otherwise you will find this pattern sprinkled ```Objects.requireNonNull``` or worse ```if (object != null) {}``` everywhere. Defend at the
-perimeter! (Timestamped link, watch time ~5 min): [Clean Code: The Next Chapter by Victor Rentea](https://youtu.be/wY_CUkU1zfw?t=2800)  
+Avoid nulls at all cost! Developer has to trust code otherwise you will find this pattern
+sprinkled ```Objects.requireNonNull``` or worse ```if (object != null) {}``` everywhere. Defend at the perimeter! (Timestamped link, watch time ~5min):
+[Clean Code: The Next Chapter by Victor Rentea](https://youtu.be/wY_CUkU1zfw?t=2800).
 All data which is incoming into the system from outside (REST request, RabbitMQ messages, Database entities etc.) has to follow these rules regarding nullability:
 
 * If property can be null, you should use **Optional as a return parameter**.
 
-```
+```java
 public class ExampleRequest {
-    
+
     private final String team;
 
     public ExampleRequest(String team) {
@@ -767,19 +795,21 @@ public class ExampleRequest {
 }
 ```
 
-* If property can have default value, define it in the constructor. Another reason to use immutable types. They guarantee correct values.
+* If property can have default value, define it in the constructor. Another reason to use immutable types. They
+  guarantee correct values.
 
-```
-    @JsonCreator
-    public EmployeeRequest(String name, String lastName, String team, JobTitle jobTitle) {
-        this.name = name;
-        this.lastName = lastName;
-        this.team = Objects.requireNonNullElse(team, "Special Team");
-        this.jobTitle = jobTitle;
-    }
+```java
+@JsonCreator
+public EmployeeRequest(String name,String lastName,String team,JobTitle jobTitle){
+        this.name=name;
+        this.lastName=lastName;
+        this.team=Objects.requireNonNullElse(team,"Special Team");
+        this.jobTitle=jobTitle;
+        }
 ```
 
-Here, for example, team can be null. However, if we can define a default value for that property, we should do it using ```requireNonNullElse``` or ```requireNonNullElseGet```.
+Here, for example, team can be null. However, if we can define a default value for that property, we should do it
+using ```requireNonNullElse``` or ```requireNonNullElseGet```.
 
 ## When to use Optional according to Bryan Goetz
 
@@ -802,26 +832,27 @@ Suggestions from [mailing list](https://mail.openjdk.java.net/pipermail/amber-de
 
 Either you declare the component optional:
 
-```
-record Person(Optional<String> name) { }
+```java
+record Person(Optional<String> name) {}
 ```
 
 or don't declare the component ``Optional`` but burn the accessor:
 
-```
+```java
 record Person(String name /*may be null*/) {
     public String name() {
-      throw new UnsupportedOperationException("name is optional");
+        throw new UnsupportedOperationException("name is optional");
     }
+
     public Optional<String> optionalName() {
-      return Optional.ofNullable(name);
+        return Optional.ofNullable(name);
     }
-  }
+}
 ```
 
 However, there was another suggestion, which **I like the most** (I cannot find the source):
 
-```
+```java
 public record Person(Optional<String> name) {
 
     @JsonCreator
@@ -835,7 +866,8 @@ public record Person(Optional<String> name) {
 
 ## Naming
 
-Follow test method naming conventions ``methodUnderTest__[given/when]__[then]`` where ``given/when`` and ``then`` is optional. Example:
+Follow test method naming conventions ``methodUnderTest__[given/when]__[then]`` where ``given/when`` and ``then`` is
+optional. Example:
 
 * ``getAllEmployees__thenReturnListOfEmployees``
 * ``getAllEmployees__whenNoEmployeesExist__thenReturnEmptyList``
@@ -844,8 +876,8 @@ Follow test method naming conventions ``methodUnderTest__[given/when]__[then]`` 
 
 ## Integration Tests
 
-Reuse Spring's Application Context as much as possible. This will speed up your tests, because it doesn't need to restart, thus in perfect conditions, you'd only need to start Spring's Application
-once. To achieve this:
+Reuse Spring's Application Context as much as possible. This will speed up your tests, because it doesn't need to
+restart, thus in perfect conditions, you'd only need to start Spring's Application once. To achieve this:
 
 * Create a single annotation (see @IntegrationTest in test folder);
 * Class which each integration test extends.
@@ -874,7 +906,7 @@ It will restart Spring's application.
 
 ## Misc
 
-```
+```java
 assertThat(responseFrame).hasNoNullFieldsOrProperties();
 ```
 
@@ -894,12 +926,12 @@ Favor construction injections vs setter/property injections. From Spring documen
 
 ----
 
-If you have multiple properties, prefer to
-use [Type-safe Configuration Properties](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-typesafe-configuration-properties).
+If you have multiple properties, prefer to use [Type-safe Configuration Properties](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-typesafe-configuration-properties).
 
 Below example, in the future, will most likely work with ``records``.
 
-```
+```java
+
 @ConstructorBinding
 @ConfigurationProperties("acme")
 public class AcmeProperties {
@@ -924,11 +956,13 @@ No need to declare ```@Autowired``` on constructors if only one constructor exis
 
 # Maven
 
-1. Try to have as little external dependencies as possible. Every dependency might block you in the future from migrating to newer Java version.
+1. Try to have as little external dependencies as possible. Every dependency might block you in the future from
+   migrating to newer Java version.
 2. Don't over-engineer plugins.
-3. At least in my experience it's best to have maven-compiler-plugin declared with Java versions, otherwise IntelliJ sets wrong Java for the project:
+3. At least in my experience it's best to have maven-compiler-plugin declared with Java versions, otherwise IntelliJ
+   sets wrong Java for the project:
 
-```
+```xml
 <!--plugin for intellij to get settings-->
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
@@ -945,9 +979,10 @@ No need to declare ```@Autowired``` on constructors if only one constructor exis
 
 ---
 
-Use UTF-8 when running surefire-plugin. There are test that include UTF-8 letters, thus if we would remove ``configuration`` they would fail.
+Use UTF-8 when running surefire-plugin. There are test that include UTF-8 letters, thus if we would
+remove ``configuration`` they would fail.
 
-```
+```xml
 <!-- Some tests assert on UTF-8 letters, thus without defined encoding, tests will fail.
 However they fail only when running with `mvn test`, but they succeed when launched through IntelliJ UI-->
 <plugin>
@@ -978,10 +1013,10 @@ http://andresalmiray.com/detecting-duplicate-dependencies-in-maven/
 
 - Ron Pressler (Project Loom Lead)
 
-```
-Thread.startVirtualThread(() -> {
-    System.out.println("Hello, Loom!");
-});
+```java
+Thread.startVirtualThread(()->{
+        System.out.println("Hello, Loom!");
+        });
 ```
 
 ## Thread "cost"
@@ -1006,26 +1041,28 @@ Thread.startVirtualThread(() -> {
 
 ## Structured concurrency
 
-Structured concurrency corrals thread lifetimes into code blocks. Its basic principle is this: threads that are created in some code unit must all terminate by the time we exit that code unit:
+Structured concurrency corrals thread lifetimes into code blocks. Its basic principle is this: threads that are created
+in some code unit must all terminate by the time we exit that code unit:
 
-```
-ThreadFactory vtf = Thread.builder().virtual().factory();
-try (ExecutorService e = Executors.newUnboundedExecutor(vtf)) {
-   e.submit(task1);
-   e.submit(task2);
-} // blocks and waits
+```java
+ThreadFactory vtf=Thread.builder().virtual().factory();
+        try(ExecutorService e=Executors.newUnboundedExecutor(vtf)){
+        e.submit(task1);
+        e.submit(task2);
+        } // blocks and waits
 ```
 
-Before we exit the TWR block, the current thread will block, waiting for all tasks — and their threads — to finish. Once outside it, we are guaranteed that the tasks have terminated.
+Before we exit the TWR block, the current thread will block, waiting for all tasks — and their threads — to finish. Once
+outside it, we are guaranteed that the tasks have terminated.
 
 ### Structured Interruption
 
-```
-try (var e = Executors.newUnboundedExecutor(myThreadFactory)
-                      .withDeadline(Instant.now().plusSeconds(30))) {
-   e.submit(task1);
-   e.submit(task2);
-}
+```java
+try(var e=Executors.newUnboundedExecutor(myThreadFactory)
+        .withDeadline(Instant.now().plusSeconds(30))){
+        e.submit(task1);
+        e.submit(task2);
+        }
 ```
 
 ## Simple benchmarks
@@ -1056,7 +1093,7 @@ Resources:
 
 Full ``application.yml``:
 
-```
+```properties
 spring:
   main:
     banner-mode: off ##Turn off banner
@@ -1128,7 +1165,7 @@ Examine each step by step.
 
 ## Flyway configuration
 
-```
+```properties
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -1141,7 +1178,7 @@ Examine each step by step.
 
 ## Datasource
 
-```
+```properties
   datasource:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:citizen;DB_CLOSE_ON_EXIT=FALSE
@@ -1154,7 +1191,7 @@ Examine each step by step.
 
 ## JPA
 
-```
+```properties
   jpa:
     database: h2
     show-sql: true #Use ``true`` only when you need to debug. Otherwise performance will degraded due to stoud'ing all SQL opperations 
@@ -1174,7 +1211,7 @@ Examine each step by step.
 
 ## Management endpoints
 
-```
+```properties
 management:
   endpoints:
     enabled-by-default: false # endpoint enablement to be opt-in rather than opt-out
@@ -1216,8 +1253,9 @@ For binary data (e.g. ``byte[]``) save into ``VARBINARY(MAX)``:
 
 # Git
 
-What happens when tag is equal to branch name? It will checkout to tag, instead of branch. That means, that new code has been commited to branch and CI tool would like to checkout to the head of named
-branch (using branch name), it will checkout to tag, and you won't have your changes deployed.
+What happens when tag is equal to branch name? It will checkout to tag, instead of branch. That means, that new code has
+been commited to branch and CI tool would like to checkout to the head of named branch (using branch name), it will
+checkout to tag, and you won't have your changes deployed.
 
 # Kotlin
 
@@ -1249,3 +1287,16 @@ Check Prometheus endpoint with and without micrometer dependency. It might expos
 # Java SSL/TLS
 
 ## Spring Security
+
+### JdbcTemplate
+
+```java
+try{
+    var framePhoto=this.jdbcTemplate.queryForObject(SELECT_ONE_SQL,Map.of("jatoId",jatoId),LcvJatoPhotoRepo::extractFrom);
+    return Optional.ofNullable(framePhoto);
+} catch(EmptyResultDataAccessException e){
+    return Optional.empty();
+}
+```
+
+Catch ``EmptyResultDataAccessException``.

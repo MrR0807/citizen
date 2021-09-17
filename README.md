@@ -146,6 +146,8 @@ More resources:
 * https://medium.com/@gabor.liptak/some-dangers-of-using-lombok-d759fc8f701f
 * https://paluch.biz/blog/180-data-classes-considered-harmful.html
 * http://gregorriegler.com/2019/08/10/who-needs-lombok-anyhow.html
+* https://openjdk.java.net/jeps/396
+* https://openjdk.java.net/jeps/403
 
 ## Lombok and Entity
 
